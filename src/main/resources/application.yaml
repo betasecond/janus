@@ -1,0 +1,34 @@
+# Janus Application Configuration
+spring:
+  application:
+    name: ${APP_NAME:janus}
+  # PostgreSQL Datasource Configuration
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+  # Flyway Configuration
+  # Automatically run migrations on startup from classpath:db/migration
+  flyway:
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
+  # Hibernate Configuration
+  # Validate the schema against the database, don't create or update it.
+  # Flyway is responsible for managing the schema.
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+  # OpenAI Configuration
+  ai:
+    openai:
+      base-url: ${OPENAI_BASE_URL}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL}
+        completions-path: ${OPENAI_COMPLETIONS_PATH:/v1/chat/completions}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL}
+
+server:
+  port: ${SERVER_PORT:9901}
