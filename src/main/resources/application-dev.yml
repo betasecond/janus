@@ -8,7 +8,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
-  # Flyway Configuration
+  data:
+      redis:
+          host: ${REDIS_HOST:localhost}
+          password: ${REDIS_PASSWORD:}
+      # Flyway Configuration
   # Automatically run migrations on startup from classpath:db/migration
   flyway:
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
@@ -38,3 +42,5 @@ oss:
   endpoint: ${OSS_ACCESS_ENDPOINT}
   access-key: ${OSS_ACCESS_KEY_ID}
   secret-key: ${OSS_ACCESS_KEY_SECRET}
+
+
