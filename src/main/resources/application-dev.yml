@@ -33,3 +33,8 @@ spring:
 
 server:
   port: ${SERVER_PORT:9901}
+oss:
+  bucket-name: ${OSS_ACCESS_BUCKET_NAME}
+  endpoint: ${OSS_ACCESS_ENDPOINT}
+  access-key: ${OSS_ACCESS_KEY_ID}
+  secret-key: ${OSS_ACCESS_KEY_SECRET}

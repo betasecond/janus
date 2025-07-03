@@ -450,11 +450,28 @@ CREATE TABLE janus_document_chunks (
 ```sql
 CREATE TABLE janus_lesson_plan_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    lesson_plan_id UUID NOT NULL REFERENCES janus_lesson_plans(id),
+    lesson_plan_id UUID NOT NULL REFERENCES janus_lesson_plans(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('lecture', 'exercise', 'note', 'summary')),
     content TEXT,
     "order" INTEGER,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 14. `janus_storage_objects` - 对象存储元数据表 (新增)
+存储上传到对象存储（如OSS）的文件的元数据。
+```sql
+CREATE TABLE janus_storage_objects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    object_key VARCHAR(1024) NOT NULL UNIQUE,
+    original_filename VARCHAR(255) NOT NULL,
+    file_size BIGINT NOT NULL,
+    content_type VARCHAR(128),
+    storage_provider VARCHAR(50) NOT NULL,
+    bucket_name VARCHAR(255) NOT NULL,
+    uploader_id UUID REFERENCES janus_users(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
