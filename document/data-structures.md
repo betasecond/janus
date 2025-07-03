@@ -317,14 +317,26 @@ CREATE TABLE janus_course_enrollments (
 );
 ```
 
-### 4. `janus_questions` - 题库表
-存储所有题目信息，作为资源库。
+### 4. `janus_knowledge_points` - 知识点表 (新增)
+存储结构化的知识点信息，用于构建知识图谱。
+```sql
+CREATE TABLE janus_knowledge_points (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    subject VARCHAR(100),
+    parent_id UUID REFERENCES janus_knowledge_points(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 5. `janus_questions` - 题库表 (修改)
+存储所有题目信息，作为资源库。移除了 `knowledge_points` 字段，改用关联表。
 ```sql
 CREATE TABLE janus_questions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type VARCHAR(50) NOT NULL CHECK (type IN ('multiple-choice', 'true-false', 'short-answer', 'essay')),
     difficulty VARCHAR(20) NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
-    knowledge_points TEXT[],
     content JSONB NOT NULL, -- 存储题干、选项等
     correct_answer JSONB,   -- 存储正确答案
     explanation TEXT,
@@ -335,17 +347,20 @@ CREATE TABLE janus_questions (
 ```
 **`content` JSONB 示例 (选择题):**
 ```json
-{
-  "title": "Which of the following is a primitive type in Java?",
-  "options": ["String", "int", "ArrayList", "Object"]
-}
-```
-**`correct_answer` JSONB 示例:**
-```json
 { "answer": "1" }
 ```
 
-### 5. `janus_assignments` - 作业表
+### 6. `janus_question_knowledge_points` - 题目知识点关联表 (新增)
+连接题目和知识点，实现多对多关系。
+```sql
+CREATE TABLE janus_question_knowledge_points (
+    question_id UUID NOT NULL REFERENCES janus_questions(id) ON DELETE CASCADE,
+    knowledge_point_id UUID NOT NULL REFERENCES janus_knowledge_points(id) ON DELETE CASCADE,
+    PRIMARY KEY (question_id, knowledge_point_id)
+);
+```
+
+### 7. `janus_assignments` - 作业表
 存储教师发布的作业信息。
 ```sql
 CREATE TABLE janus_assignments (
@@ -360,7 +375,7 @@ CREATE TABLE janus_assignments (
 );
 ```
 
-### 6. `janus_assignment_questions` - 作业题目关联表
+### 8. `janus_assignment_questions` - 作业题目关联表
 连接作业和题目。
 ```sql
 CREATE TABLE janus_assignment_questions (
@@ -371,7 +386,7 @@ CREATE TABLE janus_assignment_questions (
 );
 ```
 
-### 7. `janus_assignment_submissions` - 作业提交表
+### 9. `janus_assignment_submissions` - 作业提交表
 存储学生的作业提交记录。
 ```sql
 CREATE TABLE janus_assignment_submissions (
@@ -385,7 +400,7 @@ CREATE TABLE janus_assignment_submissions (
 );
 ```
 
-### 8. `janus_submission_answers` - 提交答案表
+### 10. `janus_submission_answers` - 提交答案表
 存储学生提交的具体答案。
 ```sql
 CREATE TABLE janus_submission_answers (
@@ -397,8 +412,8 @@ CREATE TABLE janus_submission_answers (
 );
 ```
 
-### 9. `janus_lesson_plans` - 备课（教案）表
-存储教师通过 AI 或手动创建的备课信息。
+### 11. `janus_lesson_plans` - 备课（教案）表 (修改)
+存储教师通过 AI 或手动创建的备课信息。增加了AI生成相关的元数据字段。
 ```sql
 CREATE TABLE janus_lesson_plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -407,12 +422,30 @@ CREATE TABLE janus_lesson_plans (
     creator_id UUID NOT NULL REFERENCES janus_users(id),
     source_document_url VARCHAR(512),
     status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'generating', 'completed', 'failed')),
+    ai_model_used VARCHAR(100),
+    ai_prompt TEXT,
+    generation_duration_ms BIGINT,
+    error_message TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
 
-### 10. `janus_lesson_plan_items` - 教案内容项表
+### 12. `janus_document_chunks` - 文档内容块表 (新增)
+存储为 RAG 流程分割的文档内容块及其向量元数据。
+```sql
+CREATE TABLE janus_document_chunks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lesson_plan_id UUID NOT NULL REFERENCES janus_lesson_plans(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    chunk_order INTEGER NOT NULL,
+    vector_id VARCHAR(255) UNIQUE,
+    metadata JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### 13. `janus_lesson_plan_items` - 教案内容项表
 存储教案的具体章节或内容块。
 ```sql
 CREATE TABLE janus_lesson_plan_items (
