@@ -35,6 +35,6 @@ class DataIngestionService(
             vectorStore.add(batch)
         }
         
-        println("Successfully ingested and embedded ${chunkedDocuments.size} chunks from ${storageObject.originalFilename}.")
+        logger.info("Successfully ingested and embedded ${chunkedDocuments.size} chunks from ${storageObject.originalFilename}.")
     }
 }
