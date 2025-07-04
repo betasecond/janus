@@ -45,7 +45,6 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-pdf-document-reader")
     implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
-    implementation("org.springframework.ai:spring-ai-starter-vector-store-redis")
     implementation("org.springframework.ai:spring-ai-tika-document-reader")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -62,6 +61,8 @@ dependencies {
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     runtimeOnly("org.glassfish.jaxb:jaxb-runtime:2.3.3")
     runtimeOnly("javax.activation:activation:1.1.1")
+
+    implementation("org.springframework.ai:spring-ai-redis-store")
 }
 
 dependencyManagement {
