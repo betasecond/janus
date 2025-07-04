@@ -14,10 +14,12 @@ import redis.clients.jedis.JedisPooled
 
 @Configuration
 class RedisVectorStoreConfiguration {
+    @Value("\${spring.redis.index-name:custom-index}")
+    private lateinit var redisIndexName: String
     @Bean
     fun vectorStore(jedisPooled: JedisPooled, embeddingModel: EmbeddingModel): VectorStore {
         return RedisVectorStore.builder(jedisPooled, embeddingModel)
-            .indexName("custom-index") // Optional: defaults to "spring-ai-index"
+            .indexName(redisIndexName) // Optional: defaults to "spring-ai-index"
             .prefix("custom-prefix") // Optional: defaults to "embedding:"
             .metadataFields( // Optional: define metadata fields for filtering
                 RedisVectorStore.MetadataField.tag("country"),
