@@ -5,6 +5,9 @@ import edu.jimei.janus.domain.storage.StorageObject
 import edu.jimei.janus.domain.storage.StorageObjectRepository
 import edu.jimei.janus.domain.user.UserRepository
 import edu.jimei.janus.infrastructure.oss.OssProperties
+import edu.jimei.janus.infrastructure.oss.OssResource
+import org.springframework.core.io.InputStreamResource
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -20,6 +23,10 @@ class OssService(
     private val storageObjectRepository: StorageObjectRepository,
     private val userRepository: UserRepository
 ) {
+
+    fun findById(id: UUID): StorageObject? {
+        return storageObjectRepository.findById(id).orElse(null)
+    }
 
     /**
      * Uploads a file to OSS and saves its metadata to the database.
@@ -60,6 +67,16 @@ class OssService(
     fun generatePresignedUrl(objectKey: String, expirationInMinutes: Long = 60): URL {
         val expiration = Date.from(Instant.now().plusSeconds(expirationInMinutes * 60))
         return ossClient.generatePresignedUrl(properties.bucketName, objectKey, expiration)
+    }
+
+    /**
+     * Gets an object from OSS as a Spring Resource.
+     * @param objectKey The key of the object in OSS.
+     * @return A Spring Resource.
+     */
+    fun getAsResource(objectKey: String): Resource {
+        val ossObject = ossClient.getObject(properties.bucketName, objectKey)
+        return OssResource(ossObject)
     }
 
     /**

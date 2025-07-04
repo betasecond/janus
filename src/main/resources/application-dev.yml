@@ -23,6 +23,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:validate}
+  pulsar:
+    client:
+      service-url: ${PULSAR_SERVICE_URL:pulsar://localhost:6650}
+      authentication:
+        plugin-class-name: org.apache.pulsar.client.impl.auth.AuthenticationToken
+        param:
+          token: ${PULSAR_AUTH_TOKEN:}
+
+    consumer:
+      subscription:
+        name: ${PULSAR_SUBSCRIPTION_NAME:janus-subscription}
+        initial-position: ${PULSAR_SUBSCRIPTION_INITIAL_POSITION:Latest}
+
   # OpenAI Configuration
   ai:
     openai:
@@ -35,6 +48,16 @@ spring:
         options:
           model: ${OPENAI_EMBEDDING_MODEL}
       api-key: ${OPENAI_API_KEY}
+    vectorstore:
+      redis:
+        index-name: default-index
+        initialize-schema: true
+
+# Custom application properties
+app:
+  pulsar:
+    topics:
+      file-processing: ${FILE_PROCESSING_TOPIC:persistent://public/default/file-processing-topic}
 
 server:
   port: ${SERVER_PORT:9901}
@@ -43,5 +66,4 @@ oss:
   endpoint: ${OSS_ACCESS_ENDPOINT}
   access-key: ${OSS_ACCESS_KEY_ID}
   secret-key: ${OSS_ACCESS_KEY_SECRET}
-
 

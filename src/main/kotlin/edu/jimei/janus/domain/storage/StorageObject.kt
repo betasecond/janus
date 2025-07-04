@@ -5,8 +5,14 @@ import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import java.time.OffsetDateTime
+import java.time.LocalDateTime
 import java.util.UUID
+
+enum class EmbeddingStatus {
+    PENDING,
+    COMPLETED,
+    FAILED
+}
 
 @Entity
 @Table(name = "janus_storage_objects")
@@ -34,16 +40,20 @@ class StorageObject(
     @Column(nullable = false)
     var bucketName: String,
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var embeddingStatus: EmbeddingStatus = EmbeddingStatus.PENDING,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploader_id")
     var uploader: User? = null,
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    var createdAt: OffsetDateTime? = null,
+    var createdAt: LocalDateTime? = null,
 
     @LastModifiedDate
     @Column(nullable = false)
-    var updatedAt: OffsetDateTime? = null
+    var updatedAt: LocalDateTime? = null
 
 ) 
