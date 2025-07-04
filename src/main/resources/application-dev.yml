@@ -10,9 +10,10 @@ spring:
     driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
   data:
       redis:
-          host: ${REDIS_HOST:localhost}
-          password: ${REDIS_PASSWORD:}
-      # Flyway Configuration
+        host: ${REDIS_HOST:localhost}
+        password: ${REDIS_PASSWORD:}
+        port: ${REDIS_PORT:6379}
+    # Flyway Configuration
   # Automatically run migrations on startup from classpath:db/migration
   flyway:
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
