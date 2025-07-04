@@ -1,6 +1,8 @@
 package edu.jimei.janus.application.service
 
 import edu.jimei.janus.domain.storage.StorageObject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader
 import org.springframework.stereotype.Service
 import org.springframework.ai.reader.markdown.MarkdownDocumentReader
@@ -15,6 +17,8 @@ class DataIngestionService(
     // 只依赖 VectorStore，不需要关心具体的嵌入模型是哪个
     private val vectorStore: VectorStore
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(DataIngestionService::class.java)
+
     fun ingest(resource: Resource, storageObject: StorageObject) {
         // 1. 根据文件类型选择合适的 DocumentReader
         val extension = File(storageObject.originalFilename).extension.lowercase()

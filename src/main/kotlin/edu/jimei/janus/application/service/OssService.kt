@@ -5,6 +5,7 @@ import edu.jimei.janus.domain.storage.StorageObject
 import edu.jimei.janus.domain.storage.StorageObjectRepository
 import edu.jimei.janus.domain.user.UserRepository
 import edu.jimei.janus.infrastructure.oss.OssProperties
+import edu.jimei.janus.infrastructure.oss.OssResource
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
@@ -75,7 +76,7 @@ class OssService(
      */
     fun getAsResource(objectKey: String): Resource {
         val ossObject = ossClient.getObject(properties.bucketName, objectKey)
-        return InputStreamResource(ossObject.objectContent)
+        return OssResource(ossObject)
     }
 
     /**

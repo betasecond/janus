@@ -14,7 +14,7 @@ class FileProcessingListener(
 
     @PulsarListener(
         topics = ["\${app.pulsar.topics.file-processing}"],
-        subscriptionName = "\${app.pulsar.subscriptions.file-processing}" // Configurable subscription name
+        subscriptionName = "\${app.pulsar.topics.file-processing}" // Configurable subscription name
     )
     fun handleFileProcessingRequest(storageObjectId: UUID) {
         logger.info("Received file processing request for ID: $storageObjectId")
@@ -22,8 +22,8 @@ class FileProcessingListener(
             fileProcessService.processFile(storageObjectId)
         } catch (e: Exception) {
             logger.error("Error processing file with ID $storageObjectId", e)
-            // Depending on the Pulsar configuration, the message might be redelivered.
-            // Consider adding a dead-letter queue for persistent failures.
+            // Re-throw the exception to let Pulsar handle the message failure (e.g., retry or dead-letter).
+            throw e
         }
     }
 } 
