@@ -28,8 +28,13 @@ class DataIngestionService(
         val textSplitter = TokenTextSplitter()
         val chunkedDocuments = textSplitter.apply(rawDocuments)
 
-        // 2. 提交给 VectorStore
-        vectorStore.add(chunkedDocuments)
-        println("Successfully ingested and embedded ${chunkedDocuments.size} chunks from ${resource.filename}.")
+        // 2. 提交给 VectorStore，并进行分批处理以避免超出API限制
+        // TODO:batchsize改造成读配置
+        val batchSize = 5 // As requested
+        chunkedDocuments.chunked(batchSize).forEach { batch ->
+            vectorStore.add(batch)
+        }
+        
+        println("Successfully ingested and embedded ${chunkedDocuments.size} chunks from ${storageObject.originalFilename}.")
     }
 }

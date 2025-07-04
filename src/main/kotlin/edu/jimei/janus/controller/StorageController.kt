@@ -1,10 +1,9 @@
 package edu.jimei.janus.controller
 
-import edu.jimei.janus.application.service.FileProcessService
 import edu.jimei.janus.application.service.OssService
 import edu.jimei.janus.controller.dto.StorageObjectDto
 import edu.jimei.janus.controller.dto.toDto
-import edu.jimei.janus.domain.storage.StorageObject
+import edu.jimei.janus.infrastructure.pulsar.FileProcessingProducer
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -14,7 +13,7 @@ import java.util.*
 @RequestMapping("/api/storage")
 class StorageController(
     private val ossService: OssService,
-    private val fileProcessService: FileProcessService
+    private val fileProcessingProducer: FileProcessingProducer
 ) {
 
     @PostMapping("/upload")
@@ -38,7 +37,7 @@ class StorageController(
 
     @PostMapping("/{id}/embed")
     fun embedFile(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
-        fileProcessService.processFile(id)
-        return ResponseEntity.ok(mapOf("status" to "success", "message" to "File processing started."))
+        fileProcessingProducer.sendFileProcessingRequest(id)
+        return ResponseEntity.accepted().body(mapOf("status" to "accepted", "message" to "File processing request accepted and queued."))
     }
 } 

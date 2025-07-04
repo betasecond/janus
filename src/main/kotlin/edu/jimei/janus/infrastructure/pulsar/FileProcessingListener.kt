@@ -1,0 +1,29 @@
+package edu.jimei.janus.infrastructure.pulsar
+
+import edu.jimei.janus.application.service.FileProcessService
+import org.slf4j.LoggerFactory
+import org.springframework.pulsar.annotation.PulsarListener
+import org.springframework.stereotype.Component
+import java.util.*
+
+@Component
+class FileProcessingListener(
+    private val fileProcessService: FileProcessService
+) {
+    private val logger = LoggerFactory.getLogger(FileProcessingListener::class.java)
+
+    @PulsarListener(
+        topics = ["\${app.pulsar.topics.file-processing}"],
+        subscriptionName = "file-processing-subscription" // Specific subscription name
+    )
+    fun handleFileProcessingRequest(storageObjectId: UUID) {
+        logger.info("Received file processing request for ID: $storageObjectId")
+        try {
+            fileProcessService.processFile(storageObjectId)
+        } catch (e: Exception) {
+            logger.error("Error processing file with ID $storageObjectId", e)
+            // Depending on the Pulsar configuration, the message might be redelivered.
+            // Consider adding a dead-letter queue for persistent failures.
+        }
+    }
+} 
