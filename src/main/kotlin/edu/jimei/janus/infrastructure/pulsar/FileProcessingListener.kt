@@ -14,7 +14,7 @@ class FileProcessingListener(
 
     @PulsarListener(
         topics = ["\${app.pulsar.topics.file-processing}"],
-        subscriptionName = "file-processing-subscription" // Specific subscription name
+        subscriptionName = "\${app.pulsar.subscriptions.file-processing}" // Configurable subscription name
     )
     fun handleFileProcessingRequest(storageObjectId: UUID) {
         logger.info("Received file processing request for ID: $storageObjectId")
