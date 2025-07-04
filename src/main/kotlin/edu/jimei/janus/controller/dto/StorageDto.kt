@@ -21,7 +21,7 @@ data class StorageObjectDto(
 
 fun StorageObject.toDto(): StorageObjectDto {
     return StorageObjectDto(
-        id = this.id!!, // Assuming id is never null when converting
+        id = this.id ?: throw IllegalArgumentException("StorageObject id cannot be null when converting to StorageObjectDto"),
         objectKey = this.objectKey,
         originalFilename = this.originalFilename,
         fileSize = this.fileSize,
