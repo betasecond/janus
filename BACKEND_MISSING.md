@@ -9,12 +9,12 @@
 | 数据库表 | Kotlin实体 | Repository | Service | Controller |
 |---------|-----------|------------|---------|------------|
 | janus_users ✅ | User ✅ | UserRepository ✅ | ❌ | ❌ |
-| janus_courses ✅ | Course ✅ | CourseRepository ✅ | CourseService ✅ | ❌ |
-| janus_questions ✅ | Question ✅ | QuestionRepository ✅ | QuestionService ✅ | ❌ |
-| janus_assignments ✅ | Assignment ✅ | AssignmentRepository ✅ | ❌ | ❌ |
+| janus_courses ✅ | Course ✅ | CourseRepository ✅ | CourseService ✅ | CourseController ✅ |
+| janus_questions ✅ | Question ✅ | QuestionRepository ✅ | QuestionService ✅ | QuestionController ✅ |
+| janus_assignments ✅ | Assignment ✅ | AssignmentRepository ✅ | AssignmentService ✅ | AssignmentController ✅ |
 | janus_knowledge_points ✅ | KnowledgePoint ✅ | KnowledgePointRepository ✅ | ❌ | ❌ |
 | janus_lesson_plans ✅ | LessonPlan ✅ | LessonPlanRepository ✅ | ❌ | ❌ |
-| janus_notifications ✅ | Notification ✅ | NotificationRepository ✅ | ❌ | ❌ |
+| janus_notifications ✅ | Notification ✅ | NotificationRepository ✅ | NotificationService ✅ | NotificationController ✅ |
 | janus_storage_objects ✅ | StorageObject ✅ | StorageObjectRepository ✅ | OssService ✅ | StorageController ✅ |
 
 ## 急需实现的业务层代码
@@ -44,7 +44,19 @@
 - NotificationService ✅
 - UserService ❌ (需增强现有功能)
 
-### 优先级4: Controller层 ❌ 下一步开始
+### 优先级4: Controller层 ✅ 已完成
+- CourseController ✅
+- QuestionController ✅
+- AssignmentController ✅
+- NotificationController ✅
+- AuthController ❌ (下一优先级)
+- UserController ❌ (增强现有功能)
+
+### 下一步计划 🎯
+- 认证授权系统 (AuthController + Spring Security)
+- 用户管理增强 (UserController)
+- 教学计划管理 (LessonPlanController)
+- 知识点管理 (KnowledgePointController)
 1. `AuthController` - 登录认证 (最高优先级)
 2. `UserController` - 用户管理完善
 3. `CourseController` - 课程管理  
