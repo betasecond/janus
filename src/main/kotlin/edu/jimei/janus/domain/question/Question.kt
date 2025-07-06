@@ -11,7 +11,7 @@ import java.util.UUID
 
 enum class QuestionType {
     MULTIPLE_CHOICE,
-    TRUE_FALSE, 
+    TRUE_FALSE,
     SHORT_ANSWER,
     ESSAY
 }
@@ -44,7 +44,7 @@ class Question(
     @Column(name = "correct_answer", columnDefinition = "jsonb")
     var correctAnswer: String?, // JSON格式存储正确答案
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     var explanation: String?, // 题目解析
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -4,6 +4,7 @@ import edu.jimei.janus.domain.assignment.Assignment
 import edu.jimei.janus.domain.assignment.AssignmentSubmission
 import edu.jimei.janus.domain.assignment.SubmissionAnswer
 import edu.jimei.janus.domain.assignment.SubmissionStatus
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -46,7 +47,7 @@ data class AssignmentSubmissionDto(
     val assignment: AssignmentBriefDto,
     val student: UserDto,
     val answers: List<SubmissionAnswerDto>,
-    val score: Double?,
+    val score: BigDecimal?,
     val status: SubmissionStatus,
     val submittedAt: LocalDateTime?
 )
@@ -75,7 +76,7 @@ data class AssignmentStatsDto(
     val submissionCount: Long,
     val gradedCount: Long,
     val submissionRate: Double,
-    val averageScore: Double?
+    val averageScore: BigDecimal?
 )
 
 // 扩展函数：Domain对象转DTO

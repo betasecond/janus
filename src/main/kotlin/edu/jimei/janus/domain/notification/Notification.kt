@@ -25,7 +25,7 @@ class Notification(
     @Column(nullable = false, length = 255)
     var title: String,
 
-    @Lob
+
     @Column(nullable = false)
     var content: String,
 

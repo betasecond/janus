@@ -6,6 +6,7 @@ import edu.jimei.janus.domain.notification.NotificationType
 import edu.jimei.janus.domain.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -139,7 +140,7 @@ class NotificationService(
         
         // TODO: 实现向课程所有学生发送通知的逻辑
     }    // 便利方法：发送成绩通知
-    fun notifyGradePublished(assignmentTitle: String, score: Double, studentId: UUID, teacherId: UUID): Notification {
+    fun notifyGradePublished(assignmentTitle: String, score: BigDecimal, studentId: UUID, teacherId: UUID): Notification {
         val title = "作业已批改"
         val content = "您的作业《$assignmentTitle》已批改完成，得分：$score"
         

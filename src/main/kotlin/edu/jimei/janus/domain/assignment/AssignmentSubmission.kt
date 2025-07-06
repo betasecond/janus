@@ -3,6 +3,7 @@ package edu.jimei.janus.domain.assignment
 import edu.jimei.janus.domain.question.Question
 import edu.jimei.janus.domain.user.User
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -28,14 +29,10 @@ class AssignmentSubmission(
     var student: User,
 
     @Column(name = "submitted_at")
-    var submittedAt: LocalDateTime? = LocalDateTime.now(),
-
-    @Enumerated(EnumType.STRING)
+    var submittedAt: LocalDateTime? = LocalDateTime.now(),    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    var status: SubmissionStatus = SubmissionStatus.SUBMITTED,
-
-    @Column(precision = 5, scale = 2)
-    var score: Double? = null
+    var status: SubmissionStatus = SubmissionStatus.SUBMITTED,    @Column(columnDefinition = "DECIMAL(5,2)")
+    var score: BigDecimal? = null
 ) {
     // 一对多关系：提交对应多个答案
     @OneToMany(mappedBy = "submission", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])

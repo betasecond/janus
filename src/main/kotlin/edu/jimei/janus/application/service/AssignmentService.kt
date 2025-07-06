@@ -13,6 +13,7 @@ import edu.jimei.janus.domain.question.QuestionRepository
 import edu.jimei.janus.domain.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -161,11 +162,9 @@ class AssignmentService(
             scores[answer.question.id]?.let { isCorrect ->
                 answer.isCorrect = isCorrect
             }
-        }
-
-        // 计算总分
+        }        // 计算总分
         val totalScore = submission.answers.sumOf { if (it.isCorrect == true) 1.0 else 0.0 }
-        submission.score = totalScore
+        submission.score = BigDecimal.valueOf(totalScore)
         submission.status = SubmissionStatus.GRADED
 
         return submissionRepository.save(submission)

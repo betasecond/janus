@@ -6,6 +6,7 @@ import edu.jimei.janus.controller.dto.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.math.BigDecimal
 import java.util.UUID
 
 @RestController
@@ -128,10 +129,12 @@ class AssignmentController(
         val submissionRate = if (courseStudentCount > 0) {
             (submissionCount.toDouble() / courseStudentCount.toDouble()) * 100
         } else 0.0
-        
-        val submissions = assignmentService.getSubmissionsByAssignment(id)
+          val submissions = assignmentService.getSubmissionsByAssignment(id)
         val averageScore = if (submissions.isNotEmpty()) {
-            submissions.mapNotNull { it.score }.average()
+            val scores = submissions.mapNotNull { it.score }
+            if (scores.isNotEmpty()) {
+                scores.reduce { acc, score -> acc.add(score) }.divide(BigDecimal.valueOf(scores.size.toLong()))
+            } else null
         } else null
         
         val stats = AssignmentStatsDto(

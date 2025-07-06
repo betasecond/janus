@@ -47,20 +47,16 @@ class LessonPlan(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    var status: LessonPlanStatus = LessonPlanStatus.DRAFT,
-
-    @Column(name = "ai_model_used", length = 100)
+    var status: LessonPlanStatus = LessonPlanStatus.DRAFT,    @Column(name = "ai_model_used", length = 100)
     var aiModelUsed: String?,
 
-    @Lob
-    @Column(name = "ai_prompt")
+    @Column(name = "ai_prompt", columnDefinition = "TEXT")
     var aiPrompt: String?,
 
     @Column(name = "generation_duration_ms")
     var generationDurationMs: Long?,
 
-    @Lob
-    @Column(name = "error_message")
+    @Column(name = "error_message", columnDefinition = "TEXT")
     var errorMessage: String?,
 
     @CreatedDate
@@ -105,11 +101,10 @@ class LessonPlanItem(
     @Column(nullable = false, length = 255)
     var title: String,
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "content_type", nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)    @Column(name = "content_type", nullable = false, length = 50)
     var contentType: ContentType,
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     var content: String?,
 
     @Column(name = "\"order\"")
@@ -140,12 +135,10 @@ class DocumentChunk(
     @GeneratedValue(strategy = GenerationType.AUTO)
     val id: UUID? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_plan_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)    @JoinColumn(name = "lesson_plan_id", nullable = false)
     var lessonPlan: LessonPlan,
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     var content: String,
 
     @Column(name = "chunk_order", nullable = false)

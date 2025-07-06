@@ -14,12 +14,10 @@ import java.util.UUID
 class Course(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    val id: UUID? = null,
-
-    @Column(nullable = false, length = 255)
+    val id: UUID? = null,    @Column(nullable = false, length = 255)
     var name: String,
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     var description: String?,
 
     @ManyToOne(fetch = FetchType.LAZY)
