@@ -9,31 +9,42 @@
 | 数据库表 | Kotlin实体 | Repository | Service | Controller |
 |---------|-----------|------------|---------|------------|
 | janus_users ✅ | User ✅ | UserRepository ✅ | ❌ | ❌ |
-| janus_courses ✅ | ❌ | ❌ | ❌ | ❌ |
-| janus_questions ✅ | ❌ | ❌ | ❌ | ❌ |
-| janus_assignments ✅ | ❌ | ❌ | ❌ | ❌ |
+| janus_courses ✅ | Course ✅ | CourseRepository ✅ | CourseService ✅ | ❌ |
+| janus_questions ✅ | Question ✅ | QuestionRepository ✅ | QuestionService ✅ | ❌ |
+| janus_assignments ✅ | Assignment ✅ | AssignmentRepository ✅ | ❌ | ❌ |
+| janus_knowledge_points ✅ | KnowledgePoint ✅ | KnowledgePointRepository ✅ | ❌ | ❌ |
+| janus_lesson_plans ✅ | LessonPlan ✅ | LessonPlanRepository ✅ | ❌ | ❌ |
+| janus_notifications ✅ | Notification ✅ | NotificationRepository ✅ | ❌ | ❌ |
 | janus_storage_objects ✅ | StorageObject ✅ | StorageObjectRepository ✅ | OssService ✅ | StorageController ✅ |
-| janus_lesson_plans ✅ | ❌ | ❌ | ❌ | ❌ |
 
 ## 急需实现的业务层代码
 
-### 优先级1: Domain实体类 (基于已有数据库表)
-- Course - 课程实体 (对应janus_courses表)
-- Question - 题目实体 (对应janus_questions表)  
-- Assignment - 作业实体 (对应janus_assignments表)
-- AssignmentSubmission - 作业提交 (对应janus_assignment_submissions表)
-- KnowledgePoint - 知识点 (对应janus_knowledge_points表)
-- LessonPlan - 教学计划 (对应janus_lesson_plans表)
+### 优先级1: Domain实体类 (基于已有数据库表) ✅ 已完成
+- Course - 课程实体 (对应janus_courses表) ✅
+- Question - 题目实体 (对应janus_questions表) ✅  
+- Assignment - 作业实体 (对应janus_assignments表) ✅
+- AssignmentSubmission - 作业提交 (对应janus_assignment_submissions表) ✅
+- KnowledgePoint - 知识点 (对应janus_knowledge_points表) ✅
+- LessonPlan - 教学计划 (对应janus_lesson_plans表) ✅
+- Notification - 通知 (对应janus_notifications表) ✅
 
-### 优先级2: Repository接口
-- CourseRepository
-- QuestionRepository  
-- AssignmentRepository
-- AssignmentSubmissionRepository
-- KnowledgePointRepository
-- LessonPlanRepository
+### 优先级2: Repository接口 ✅ 已完成
+- CourseRepository ✅
+- QuestionRepository ✅  
+- AssignmentRepository ✅
+- AssignmentSubmissionRepository ✅
+- KnowledgePointRepository ✅
+- LessonPlanRepository ✅
+- NotificationRepository ✅
 
-### 优先级3: Controller层
+### 优先级3: Service层 ✅ 已完成
+- CourseService ✅
+- QuestionService ✅
+- AssignmentService ✅
+- NotificationService ✅
+- UserService ❌ (需增强现有功能)
+
+### 优先级4: Controller层 ❌ 下一步开始
 1. `AuthController` - 登录认证 (最高优先级)
 2. `UserController` - 用户管理完善
 3. `CourseController` - 课程管理  
