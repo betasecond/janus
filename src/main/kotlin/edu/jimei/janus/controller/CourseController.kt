@@ -101,20 +101,19 @@ class CourseController(
     fun getCourseStudents(@PathVariable id: UUID): ResponseEntity<List<UserDto>> {
         val course = courseService.findById(id)
         val students = course.students.map { it.toDto() }
-        return ResponseEntity.ok(students)
-    }
+        return ResponseEntity.ok(students)    }
 
     @GetMapping("/{id}/stats")
     fun getCourseStats(@PathVariable id: UUID): ResponseEntity<Map<String, Any>> {
         val studentCount = courseService.getStudentCount(id)
         val course = courseService.findById(id)
         
-        val stats = mapOf(
+        val stats: Map<String, Any> = mapOf(
             "id" to id,
             "name" to course.name,
             "studentCount" to studentCount,
             "teacher" to course.teacher.toDto(),
-            "createdAt" to course.createdAt
+            "createdAt" to (course.createdAt?.toString() ?: "")
         )
         
         return ResponseEntity.ok(stats)

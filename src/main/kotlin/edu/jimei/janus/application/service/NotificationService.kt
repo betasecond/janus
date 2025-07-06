@@ -138,14 +138,12 @@ class NotificationService(
         val content = "教师发布了新作业：$assignmentTitle"
         
         // TODO: 实现向课程所有学生发送通知的逻辑
-    }
-
-    // 便利方法：发送成绩通知
-    fun notifyGradePublished(assignmentTitle: String, score: Double, studentId: UUID, teacherId: UUID) {
+    }    // 便利方法：发送成绩通知
+    fun notifyGradePublished(assignmentTitle: String, score: Double, studentId: UUID, teacherId: UUID): Notification {
         val title = "作业已批改"
         val content = "您的作业《$assignmentTitle》已批改完成，得分：$score"
         
-        sendNotification(
+        return sendNotification(
             title = title,
             content = content,
             type = NotificationType.GRADE,
