@@ -47,7 +47,7 @@ class QuestionController(
         @RequestParam(required = false) subject: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): ResponseEntity<*> {
+    ): ResponseEntity<PageDto<QuestionDto>> {
         if (type == null && difficulty == null && creatorId == null && knowledgePointId == null && subject == null) {
             val pageable = PageRequest.of(page, size)
             val questionPage = questionService.findAll(pageable)
