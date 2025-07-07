@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.ai.embedding.EmbeddingModel
-import org.springframework.ai.embedding.EmbeddingResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -19,7 +18,7 @@ data class EmbeddingRequest(val message: String)
 
 data class EmbeddingOutputDto(
     val index: Int,
-    val embedding: List<Double>
+    val embedding: List<Float>
 )
 
 data class EmbeddingApiResponseDto(
@@ -68,7 +67,7 @@ class EmbeddingController(
     fun embed(@RequestBody request: EmbeddingRequest): EmbeddingApiResponseDto {
         val embeddingResponse = embeddingModel.embedForResponse(listOf(request.message))
         val embeddingOutputs = embeddingResponse.results.map {
-            EmbeddingOutputDto(index = it.index, embedding = it.output.embedding)
+            EmbeddingOutputDto(index = it.index, embedding = it.output.toList())
         }
         return EmbeddingApiResponseDto(data = embeddingOutputs)
     }
