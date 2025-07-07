@@ -101,10 +101,7 @@ class AssignmentController(
 
     @GetMapping("/submissions/{submissionId}")
     fun getSubmission(@PathVariable submissionId: UUID): ResponseEntity<AssignmentSubmissionVO> {
-        val submissions = assignmentService.getSubmissionsByAssignment(UUID.randomUUID()) // 需要改进查询方式
-        val submission = submissions.find { it.id == submissionId }
-            ?: throw IllegalArgumentException("Submission with ID $submissionId not found")
-        
+        val submission = assignmentService.findSubmissionById(submissionId)
         return ResponseEntity.ok(submission.toVo())
     }
 
@@ -129,7 +126,7 @@ class AssignmentController(
         val assignment = assignmentService.findById(id)
         val submissionCount = assignmentService.getSubmissionCount(id)
         val gradedCount = assignmentService.getGradedSubmissionCount(id)
-        val courseStudentCount = courseService.getStudentCount(assignment.course.id!!)
+        val courseStudentCount = courseService.getStudentCount(assignment.course.id ?: throw IllegalStateException("Assignment's course ID cannot be null"))
         
         val submissionRate = if (courseStudentCount > 0) {
             (submissionCount.toDouble() / courseStudentCount.toDouble()) * 100
@@ -158,8 +155,16 @@ class AssignmentController(
     @GetMapping("/course/{courseId}/stats")
     fun getCourseAssignmentStats(@PathVariable courseId: UUID): ResponseEntity<CourseAssignmentStatsVO> {
         val assignments = assignmentService.findByCourse(courseId)
+        val assignmentIds = assignments.mapNotNull { it.id }
+
+        val submissionCounts = if (assignmentIds.isNotEmpty()) {
+            assignmentService.getSubmissionCounts(assignmentIds)
+        } else {
+            emptyMap()
+        }
+
         val totalAssignments = assignments.size
-        val totalSubmissions = assignments.sumOf { assignmentService.getSubmissionCount(it.id!!) }
+        val totalSubmissions = submissionCounts.values.sum()
         
         val stats = CourseAssignmentStatsVO(
             courseId = courseId,
@@ -167,9 +172,9 @@ class AssignmentController(
             totalSubmissions = totalSubmissions,
             assignments = assignments.map { assignment ->
                 AssignmentStatVO(
-                    id = assignment.id!!,
+                    id = assignment.id ?: throw IllegalStateException("Assignment ID cannot be null"),
                     title = assignment.title,
-                    submissionCount = assignmentService.getSubmissionCount(assignment.id!!),
+                    submissionCount = submissionCounts[assignment.id] ?: 0L,
                     dueDate = assignment.dueDate
                 )
             }
