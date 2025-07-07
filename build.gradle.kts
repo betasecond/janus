@@ -63,6 +63,9 @@ dependencies {
     runtimeOnly("javax.activation:activation:1.1.1")
 
     implementation("org.springframework.ai:spring-ai-redis-store")
+
+    // OpenAPI (Swagger)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 }
 
 dependencyManagement {
