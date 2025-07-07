@@ -90,7 +90,7 @@ class CourseService(
             return emptyMap()
         }
         return courseRepository.countStudentsByCourseIdIn(courseIds)
-            .associate { (id, count) -> id as UUID to count as Long }
+            .associate { it.courseId to it.studentCount }
     }
 
     fun searchCourses(keyword: String): List<Course> {

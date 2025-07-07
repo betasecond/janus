@@ -1,5 +1,6 @@
 package edu.jimei.janus.domain.course
 
+import edu.jimei.janus.domain.course.projection.CourseStudentCount
 import edu.jimei.janus.domain.user.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -19,6 +20,6 @@ interface CourseRepository : JpaRepository<Course, UUID> {
     @Query("SELECT COUNT(e) FROM Course c JOIN c.students e WHERE c.id = :courseId")
     fun countStudentsByCourseId(@Param("courseId") courseId: UUID): Long
 
-    @Query("SELECT c.id, COUNT(s) FROM Course c JOIN c.students s WHERE c.id IN :courseIds GROUP BY c.id")
-    fun countStudentsByCourseIdIn(@Param("courseIds") courseIds: List<UUID>): List<Array<Any>>
+    @Query("SELECT new edu.jimei.janus.domain.course.projection.CourseStudentCount(c.id, COUNT(s)) FROM Course c JOIN c.students s WHERE c.id IN :courseIds GROUP BY c.id")
+    fun countStudentsByCourseIdIn(@Param("courseIds") courseIds: List<UUID>): List<CourseStudentCount>
 }

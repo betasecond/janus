@@ -195,7 +195,7 @@ class AssignmentService(
             return emptyMap()
         }
         return submissionRepository.countByAssignmentIdIn(assignmentIds)
-            .associate { (id, count) -> id as UUID to count as Long }
+            .associate { it.assignmentId to it.submissionCount }
     }
 
     fun deleteAssignment(assignmentId: UUID) {
