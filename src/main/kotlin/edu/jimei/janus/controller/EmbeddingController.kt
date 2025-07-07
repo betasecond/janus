@@ -1,6 +1,10 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.EmbeddingService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.embedding.EmbeddingResponse
 import org.springframework.http.ResponseEntity
@@ -22,6 +26,11 @@ class EmbeddingController(
 ) {
 
     @PostMapping("/embedding/store")
+    @Operation(summary = "Embed and store a message", responses = [
+        ApiResponse(responseCode = "200", description = "Embedding stored successfully", content = [
+            Content(mediaType = "application/json", schema = Schema(implementation = Map::class))
+        ])
+    ])
     fun embedAndStore(@RequestBody request: EmbeddingRequest): ResponseEntity<Map<String, String>> {
         embeddingService.embedAndStore(request.message)
         return ResponseEntity.ok(mapOf("status" to "success", "message" to "Embedding stored successfully."))
@@ -34,6 +43,11 @@ class EmbeddingController(
 //    }
 
     @PostMapping("/embedding")
+    @Operation(summary = "Embed a message", responses = [
+        ApiResponse(responseCode = "200", description = "Embedding created successfully", content = [
+            Content(mediaType = "application/json", schema = Schema(implementation = Map::class))
+        ])
+    ])
     fun embed(@RequestBody request: EmbeddingRequest): Map<String, EmbeddingResponse> {
         val embeddingResponse = embeddingModel.embedForResponse(listOf(request.message))
         return mapOf("embedding" to embeddingResponse)
