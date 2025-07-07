@@ -68,7 +68,7 @@ class EmbeddingController(
     fun embed(@RequestBody request: EmbeddingRequest): EmbeddingApiResponseDto {
         val embeddingResponse = embeddingModel.embedForResponse(listOf(request.message))
         val embeddingOutputs = embeddingResponse.results.map {
-            EmbeddingOutputDto(index = it.index, embedding = it.output)
+            EmbeddingOutputDto(index = it.index, embedding = it.output.embedding)
         }
         return EmbeddingApiResponseDto(data = embeddingOutputs)
     }
