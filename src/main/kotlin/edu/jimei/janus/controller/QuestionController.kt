@@ -47,7 +47,13 @@ class QuestionController(
         @RequestParam(required = false) subject: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): ResponseEntity<Map<String, Any>> {
+    ): ResponseEntity<*> {
+        if (type == null && difficulty == null && creatorId == null && knowledgePointId == null && subject == null) {
+            val pageable = PageRequest.of(page, size)
+            val questionPage = questionService.findAll(pageable)
+            return ResponseEntity.ok(questionPage.toDto { it.toDto() })
+        }
+
         val questions = when {
             type != null && difficulty != null -> questionService.findByTypeAndDifficulty(type, difficulty)
             type != null -> questionService.findByType(type)
@@ -55,28 +61,16 @@ class QuestionController(
             creatorId != null -> questionService.findByCreator(creatorId)
             knowledgePointId != null -> questionService.findByKnowledgePoint(knowledgePointId)
             subject != null -> questionService.findBySubject(subject)
-            else -> {
-                val pageable = PageRequest.of(page, size)
-                val questionPage = questionService.findAll(pageable)
-                val questionDtos = questionPage.content.map { it.toDto() }
-                
-                return ResponseEntity.ok(mapOf(
-                    "content" to questionDtos,
-                    "totalElements" to questionPage.totalElements,
-                    "totalPages" to questionPage.totalPages,
-                    "size" to questionPage.size,
-                    "number" to questionPage.number
-                ))
-            }
+            else -> emptyList()
         }
 
         val questionDtos = questions.map { it.toDto() }
-        return ResponseEntity.ok(mapOf(
-            "content" to questionDtos,
-            "totalElements" to questionDtos.size,
-            "totalPages" to 1,
-            "size" to questionDtos.size,
-            "number" to 0
+        return ResponseEntity.ok(PageDto(
+            content = questionDtos,
+            totalElements = questionDtos.size.toLong(),
+            totalPages = 1,
+            size = questionDtos.size,
+            number = 0
         ))
     }
 
@@ -123,23 +117,23 @@ class QuestionController(
     }
 
     @GetMapping("/stats")
-    fun getQuestionStats(): ResponseEntity<Map<String, Any>> {
+    fun getQuestionStats(): ResponseEntity<QuestionStatsDto> {
         val allQuestions = questionService.findAll()
-        
+
         val statsByType = QuestionType.values().associateWith { type ->
-            allQuestions.count { it.type == type }
+            allQuestions.count { it.type == type }.toLong()
         }
-        
+
         val statsByDifficulty = Difficulty.values().associateWith { difficulty ->
-            allQuestions.count { it.difficulty == difficulty }
+            allQuestions.count { it.difficulty == difficulty }.toLong()
         }
-        
-        val stats = mapOf(
-            "total" to allQuestions.size,
-            "byType" to statsByType,
-            "byDifficulty" to statsByDifficulty
+
+        val stats = QuestionStatsDto(
+            total = allQuestions.size.toLong(),
+            byType = statsByType,
+            byDifficulty = statsByDifficulty
         )
-        
+
         return ResponseEntity.ok(stats)
     }
 

@@ -78,3 +78,9 @@ fun edu.jimei.janus.domain.knowledge.KnowledgePoint.toDto(): KnowledgePointDto {
         subject = this.subject
     )
 }
+
+data class QuestionStatsDto(
+    val total: Long,
+    val byType: Map<QuestionType, Long>,
+    val byDifficulty: Map<Difficulty, Long>
+)
