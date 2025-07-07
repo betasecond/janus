@@ -2,7 +2,12 @@ package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.AssignmentService
 import edu.jimei.janus.application.service.CourseService
-import edu.jimei.janus.controller.dto.*
+import edu.jimei.janus.controller.dto.CreateAssignmentDto
+import edu.jimei.janus.controller.dto.GradeSubmissionDto
+import edu.jimei.janus.controller.dto.SubmitAssignmentDto
+import edu.jimei.janus.controller.dto.UpdateAssignmentDto
+import edu.jimei.janus.controller.vo.*
+import edu.jimei.janus.controller.vo.common.toVo
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -18,7 +23,7 @@ class AssignmentController(
 ) {
 
     @PostMapping
-    fun createAssignment(@RequestBody createDto: CreateAssignmentDto): ResponseEntity<AssignmentDto> {
+    fun createAssignment(@RequestBody createDto: CreateAssignmentDto): ResponseEntity<AssignmentVO> {
         val assignment = assignmentService.createAssignment(
             title = createDto.title,
             description = createDto.description,
@@ -28,13 +33,13 @@ class AssignmentController(
             questionIds = createDto.questionIds
         )
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(assignment.toDto())
+        return ResponseEntity.status(HttpStatus.CREATED).body(assignment.toVo())
     }
 
     @GetMapping("/{id}")
-    fun getAssignment(@PathVariable id: UUID): ResponseEntity<AssignmentDto> {
+    fun getAssignment(@PathVariable id: UUID): ResponseEntity<AssignmentVO> {
         val assignment = assignmentService.findById(id)
-        return ResponseEntity.ok(assignment.toDto())
+        return ResponseEntity.ok(assignment.toVo())
     }
 
     @GetMapping
@@ -42,7 +47,7 @@ class AssignmentController(
         @RequestParam(required = false) courseId: UUID?,
         @RequestParam(required = false) creatorId: UUID?,
         @RequestParam(required = false) studentId: UUID?
-    ): ResponseEntity<List<AssignmentDto>> {
+    ): ResponseEntity<List<AssignmentVO>> {
         val assignments = when {
             courseId != null -> assignmentService.findByCourse(courseId)
             creatorId != null -> assignmentService.findByCreator(creatorId)
@@ -50,15 +55,15 @@ class AssignmentController(
             else -> assignmentService.findAll()
         }
 
-        val assignmentDtos = assignments.map { it.toDto() }
-        return ResponseEntity.ok(assignmentDtos)
+        val assignmentVos = assignments.map { it.toVo() }
+        return ResponseEntity.ok(assignmentVos)
     }
 
     @PutMapping("/{id}")
     fun updateAssignment(
         @PathVariable id: UUID,
         @RequestBody updateDto: UpdateAssignmentDto
-    ): ResponseEntity<AssignmentDto> {
+    ): ResponseEntity<AssignmentVO> {
         val updatedAssignment = assignmentService.updateAssignment(
             assignmentId = id,
             title = updateDto.title,
@@ -67,7 +72,7 @@ class AssignmentController(
             questionIds = updateDto.questionIds
         )
         
-        return ResponseEntity.ok(updatedAssignment.toDto())
+        return ResponseEntity.ok(updatedAssignment.toVo())
     }
 
     @DeleteMapping("/{id}")
@@ -77,50 +82,50 @@ class AssignmentController(
     }
 
     @PostMapping("/submit")
-    fun submitAssignment(@RequestBody submitDto: SubmitAssignmentDto): ResponseEntity<AssignmentSubmissionDto> {
+    fun submitAssignment(@RequestBody submitDto: SubmitAssignmentDto): ResponseEntity<AssignmentSubmissionVO> {
         val submission = assignmentService.submitAssignment(
             assignmentId = submitDto.assignmentId,
             studentId = submitDto.studentId,
             answers = submitDto.answers
         )
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(submission.toDto())
+        return ResponseEntity.status(HttpStatus.CREATED).body(submission.toVo())
     }
 
     @GetMapping("/{id}/submissions")
-    fun getAssignmentSubmissions(@PathVariable id: UUID): ResponseEntity<List<AssignmentSubmissionDto>> {
+    fun getAssignmentSubmissions(@PathVariable id: UUID): ResponseEntity<List<AssignmentSubmissionVO>> {
         val submissions = assignmentService.getSubmissionsByAssignment(id)
-        val submissionDtos = submissions.map { it.toDto() }
-        return ResponseEntity.ok(submissionDtos)
+        val submissionVos = submissions.map { it.toVo() }
+        return ResponseEntity.ok(submissionVos)
     }
 
     @GetMapping("/submissions/{submissionId}")
-    fun getSubmission(@PathVariable submissionId: UUID): ResponseEntity<AssignmentSubmissionDto> {
+    fun getSubmission(@PathVariable submissionId: UUID): ResponseEntity<AssignmentSubmissionVO> {
         val submissions = assignmentService.getSubmissionsByAssignment(UUID.randomUUID()) // 需要改进查询方式
         val submission = submissions.find { it.id == submissionId }
             ?: throw IllegalArgumentException("Submission with ID $submissionId not found")
         
-        return ResponseEntity.ok(submission.toDto())
+        return ResponseEntity.ok(submission.toVo())
     }
 
     @PostMapping("/submissions/{submissionId}/grade")
     fun gradeSubmission(
         @PathVariable submissionId: UUID,
         @RequestBody gradeDto: GradeSubmissionDto
-    ): ResponseEntity<AssignmentSubmissionDto> {
+    ): ResponseEntity<AssignmentSubmissionVO> {
         val gradedSubmission = assignmentService.gradeSubmission(submissionId, gradeDto.scores)
-        return ResponseEntity.ok(gradedSubmission.toDto())
+        return ResponseEntity.ok(gradedSubmission.toVo())
     }
 
     @GetMapping("/student/{studentId}")
-    fun getStudentSubmissions(@PathVariable studentId: UUID): ResponseEntity<List<AssignmentSubmissionDto>> {
+    fun getStudentSubmissions(@PathVariable studentId: UUID): ResponseEntity<List<AssignmentSubmissionVO>> {
         val submissions = assignmentService.getSubmissionsByStudent(studentId)
-        val submissionDtos = submissions.map { it.toDto() }
-        return ResponseEntity.ok(submissionDtos)
+        val submissionVos = submissions.map { it.toVo() }
+        return ResponseEntity.ok(submissionVos)
     }
 
     @GetMapping("/{id}/stats")
-    fun getAssignmentStats(@PathVariable id: UUID): ResponseEntity<AssignmentStatsDto> {
+    fun getAssignmentStats(@PathVariable id: UUID): ResponseEntity<AssignmentStatsVO> {
         val assignment = assignmentService.findById(id)
         val submissionCount = assignmentService.getSubmissionCount(id)
         val gradedCount = assignmentService.getGradedSubmissionCount(id)
@@ -137,7 +142,7 @@ class AssignmentController(
             } else null
         } else null
         
-        val stats = AssignmentStatsDto(
+        val stats = AssignmentStatsVO(
             id = id,
             title = assignment.title,
             totalStudents = courseStudentCount,
@@ -151,21 +156,21 @@ class AssignmentController(
     }
 
     @GetMapping("/course/{courseId}/stats")
-    fun getCourseAssignmentStats(@PathVariable courseId: UUID): ResponseEntity<Map<String, Any>> {
+    fun getCourseAssignmentStats(@PathVariable courseId: UUID): ResponseEntity<CourseAssignmentStatsVO> {
         val assignments = assignmentService.findByCourse(courseId)
         val totalAssignments = assignments.size
         val totalSubmissions = assignments.sumOf { assignmentService.getSubmissionCount(it.id!!) }
         
-        val stats = mapOf(
-            "courseId" to courseId,
-            "totalAssignments" to totalAssignments,
-            "totalSubmissions" to totalSubmissions,
-            "assignments" to assignments.map { assignment ->
-                mapOf(
-                    "id" to assignment.id,
-                    "title" to assignment.title,
-                    "submissionCount" to assignmentService.getSubmissionCount(assignment.id!!),
-                    "dueDate" to assignment.dueDate
+        val stats = CourseAssignmentStatsVO(
+            courseId = courseId,
+            totalAssignments = totalAssignments,
+            totalSubmissions = totalSubmissions,
+            assignments = assignments.map { assignment ->
+                AssignmentStatVO(
+                    id = assignment.id!!,
+                    title = assignment.title,
+                    submissionCount = assignmentService.getSubmissionCount(assignment.id!!),
+                    dueDate = assignment.dueDate
                 )
             }
         )
