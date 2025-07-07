@@ -57,3 +57,15 @@ fun Notification.toDto(): NotificationDto {
         createdAt = this.createdAt
     )
 }
+
+data class ReadStatusDto(
+    val total: Int,
+    val read: Int,
+    val unread: Int
+)
+
+data class NotificationStatsDto(
+    val total: Int,
+    val byType: Map<NotificationType, Int>,
+    val readStatus: ReadStatusDto
+)

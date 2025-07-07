@@ -130,25 +130,25 @@ class NotificationController(
     }
 
     @GetMapping("/stats")
-    fun getNotificationStats(): ResponseEntity<Map<String, Any>> {
+    fun getNotificationStats(): ResponseEntity<NotificationStatsDto> {
         val allNotifications = notificationService.findAll()
-        
+
         val statsByType = NotificationType.values().associateWith { type ->
             allNotifications.count { it.type == type }
         }
-        
-        val readStats = mapOf(
-            "total" to allNotifications.size,
-            "read" to allNotifications.count { it.isRead },
-            "unread" to allNotifications.count { !it.isRead }
+
+        val readStats = ReadStatusDto(
+            total = allNotifications.size,
+            read = allNotifications.count { it.isRead },
+            unread = allNotifications.count { !it.isRead }
         )
-        
-        val stats = mapOf(
-            "total" to allNotifications.size,
-            "byType" to statsByType,
-            "readStatus" to readStats
+
+        val stats = NotificationStatsDto(
+            total = allNotifications.size,
+            byType = statsByType,
+            readStatus = readStats
         )
-        
+
         return ResponseEntity.ok(stats)
     }
 
