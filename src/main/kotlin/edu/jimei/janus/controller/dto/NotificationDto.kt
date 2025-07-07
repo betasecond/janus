@@ -40,7 +40,8 @@ data class NotificationSummaryDto(
 )
 
 data class MarkReadDto(
-    val notificationIds: List<UUID>
+    val notificationIds: List<UUID>,
+    val userId: UUID
 )
 
 // 扩展函数：Domain对象转DTO

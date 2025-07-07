@@ -85,6 +85,14 @@ class CourseService(
         return courseRepository.countStudentsByCourseId(courseId)
     }
 
+    fun getStudentCounts(courseIds: List<UUID>): Map<UUID, Long> {
+        if (courseIds.isEmpty()) {
+            return emptyMap()
+        }
+        return courseRepository.countStudentsByCourseIdIn(courseIds)
+            .associate { (id, count) -> id as UUID to count as Long }
+    }
+
     fun searchCourses(keyword: String): List<Course> {
         return courseRepository.findByNameContainingIgnoreCase(keyword)
     }

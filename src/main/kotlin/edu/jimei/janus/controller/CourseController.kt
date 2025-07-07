@@ -29,7 +29,7 @@ class CourseController(
             coverImageUrl = createDto.coverImageUrl
         )
         
-        val studentCount = courseService.getStudentCount(course.id!!)
+        val studentCount = courseService.getStudentCount(course.id ?: throw IllegalStateException("Created course must have an ID"))
         return ResponseEntity.status(HttpStatus.CREATED).body(course.toVo(studentCount))
     }
 
@@ -53,8 +53,11 @@ class CourseController(
             else -> courseService.findAll()
         }
 
+        val courseIds = courses.mapNotNull { it.id }
+        val studentCounts = if (courseIds.isNotEmpty()) courseService.getStudentCounts(courseIds) else emptyMap()
+
         val courseVos = courses.map { course ->
-            val studentCount = courseService.getStudentCount(course.id!!)
+            val studentCount = studentCounts[course.id] ?: 0L
             course.toVo(studentCount)
         }
 

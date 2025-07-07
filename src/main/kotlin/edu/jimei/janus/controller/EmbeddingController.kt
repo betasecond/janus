@@ -1,10 +1,9 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.EmbeddingService
-import edu.jimei.janus.controller.vo.EmbeddingResponseVO
+import edu.jimei.janus.controller.vo.EmbeddingVO
 import edu.jimei.janus.controller.vo.common.StatusVO
 import org.springframework.ai.embedding.EmbeddingModel
-import org.springframework.ai.embedding.EmbeddingResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -34,8 +33,8 @@ class EmbeddingController(
 //    }
 
     @PostMapping("/embedding")
-    fun embed(@RequestBody request: EmbeddingRequest): EmbeddingResponseVO {
+    fun embed(@RequestBody request: EmbeddingRequest): EmbeddingVO {
         val embeddingResponse = embeddingModel.embedForResponse(listOf(request.message))
-        return EmbeddingResponseVO(embedding = embeddingResponse)
+        return EmbeddingVO(embedding = embeddingResponse)
     }
 }

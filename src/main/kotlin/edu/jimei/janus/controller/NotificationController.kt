@@ -99,11 +99,7 @@ class NotificationController(
 
     @PostMapping("/mark-read")
     fun markMultipleAsRead(@RequestBody markReadDto: MarkReadDto): ResponseEntity<MessageVO> {
-        // 注意：这里简化实现，实际应该验证用户权限
-        markReadDto.notificationIds.forEach { notificationId ->
-            // 需要传入正确的userId，这里需要从认证上下文获取
-            // notificationService.markAsRead(notificationId, currentUserId)
-        }
+        notificationService.markMultipleAsRead(markReadDto.notificationIds, markReadDto.userId)
         return ResponseEntity.ok(MessageVO("Selected notifications marked as read"))
     }
 
@@ -164,8 +160,7 @@ class NotificationController(
         @RequestParam courseId: UUID,
         @RequestParam teacherId: UUID
     ): ResponseEntity<MessageVO> {
-        // 这里应该调用service的便利方法
-        // notificationService.notifyAssignmentCreated(assignmentTitle, courseId, teacherId)
+        notificationService.notifyAssignmentCreated(assignmentId, courseId, teacherId)
         return ResponseEntity.ok(MessageVO("Assignment creation notifications sent"))
     }
 
@@ -177,7 +172,7 @@ class NotificationController(
         @RequestParam teacherId: UUID
     ): ResponseEntity<NotificationVO> {
         val notification = notificationService.notifyGradePublished(
-            assignmentTitle = "作业", // 应该从submission获取
+            submissionId = submissionId,
             score = score,
             studentId = studentId,
             teacherId = teacherId

@@ -26,6 +26,10 @@ interface NotificationRepository : JpaRepository<Notification, UUID> {
     fun markAllAsReadByRecipientId(@Param("recipientId") recipientId: UUID, @Param("readAt") readAt: LocalDateTime)
     
     @Modifying
+    @Query("UPDATE Notification n SET n.isRead = true, n.readAt = :readAt WHERE n.id IN :notificationIds AND n.recipient.id = :recipientId")
+    fun markAsReadByIdsAndRecipientId(@Param("notificationIds") notificationIds: List<UUID>, @Param("recipientId") recipientId: UUID, @Param("readAt") readAt: LocalDateTime)
+
+    @Modifying
     @Query("DELETE FROM Notification n WHERE n.createdAt < :cutoffDate")
     fun deleteOldNotifications(@Param("cutoffDate") cutoffDate: LocalDateTime)
 }

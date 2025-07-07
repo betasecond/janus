@@ -36,6 +36,9 @@ interface AssignmentSubmissionRepository : JpaRepository<AssignmentSubmission, U
     
     fun countByAssignmentId(assignmentId: UUID): Long
     
+    @Query("SELECT s.assignment.id, COUNT(s) FROM AssignmentSubmission s WHERE s.assignment.id IN :assignmentIds GROUP BY s.assignment.id")
+    fun countByAssignmentIdIn(@Param("assignmentIds") assignmentIds: List<UUID>): List<Array<Any>>
+    
     @Query("SELECT COUNT(s) FROM AssignmentSubmission s WHERE s.assignment.id = :assignmentId AND s.status = :status")
     fun countByAssignmentIdAndStatus(@Param("assignmentId") assignmentId: UUID, @Param("status") status: SubmissionStatus): Long
 }
