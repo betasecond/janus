@@ -2,3 +2,13 @@
 spring:
   profiles:
     active: dev
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  info:
+    title: "Janus 智能教辅系统 API"
+    description: "这是使用 springdoc-openapi-ui 生成的 Janus 智能教辅系统 API 文档。"
+    version: "v1.0.0"
