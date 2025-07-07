@@ -3,6 +3,7 @@ package edu.jimei.janus.controller
 import edu.jimei.janus.application.service.OssService
 import edu.jimei.janus.controller.dto.StorageObjectDto
 import edu.jimei.janus.controller.dto.toDto
+import edu.jimei.janus.controller.dto.StatusResponseDto
 import edu.jimei.janus.infrastructure.pulsar.FileProcessingProducer
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -53,12 +54,13 @@ class StorageController(
 
     @PostMapping("/{id}/embed")
     @Operation(summary = "Request to embed a file", responses = [
-        ApiResponse(responseCode = "222", description = "File processing request accepted", content = [
-            Content(mediaType = "application/json", schema = Schema(implementation = Map::class))
+        ApiResponse(responseCode = "202", description = "File processing request accepted", content = [
+            Content(mediaType = "application/json", schema = Schema(implementation = StatusResponseDto::class))
         ])
     ])
-    fun embedFile(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
+    fun embedFile(@PathVariable id: UUID): ResponseEntity<StatusResponseDto> {
         fileProcessingProducer.sendFileProcessingRequest(id)
-        return ResponseEntity.accepted().body(mapOf("status" to "accepted", "message" to "File processing request accepted and queued."))
+        val response = StatusResponseDto("accepted", "File processing request accepted and queued.")
+        return ResponseEntity.accepted().body(response)
     }
 } 

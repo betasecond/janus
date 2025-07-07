@@ -1,6 +1,7 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.EmbeddingService
+import edu.jimei.janus.controller.dto.StatusResponseDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 
 data class EmbeddingRequest(val message: String)
+data class EmbeddingResponseDto(val embedding: EmbeddingResponse)
 
 @RestController
 @RequestMapping("/ai")
@@ -28,12 +30,13 @@ class EmbeddingController(
     @PostMapping("/embedding/store")
     @Operation(summary = "Embed and store a message", responses = [
         ApiResponse(responseCode = "200", description = "Embedding stored successfully", content = [
-            Content(mediaType = "application/json", schema = Schema(implementation = Map::class))
+            Content(mediaType = "application/json", schema = Schema(implementation = StatusResponseDto::class))
         ])
     ])
-    fun embedAndStore(@RequestBody request: EmbeddingRequest): ResponseEntity<Map<String, String>> {
+    fun embedAndStore(@RequestBody request: EmbeddingRequest): ResponseEntity<StatusResponseDto> {
         embeddingService.embedAndStore(request.message)
-        return ResponseEntity.ok(mapOf("status" to "success", "message" to "Embedding stored successfully."))
+        val response = StatusResponseDto("success", "Embedding stored successfully.")
+        return ResponseEntity.ok(response)
     }
 
 //    @GetMapping("/embedding/similar")
@@ -45,11 +48,11 @@ class EmbeddingController(
     @PostMapping("/embedding")
     @Operation(summary = "Embed a message", responses = [
         ApiResponse(responseCode = "200", description = "Embedding created successfully", content = [
-            Content(mediaType = "application/json", schema = Schema(implementation = Map::class))
+            Content(mediaType = "application/json", schema = Schema(implementation = EmbeddingResponseDto::class))
         ])
     ])
-    fun embed(@RequestBody request: EmbeddingRequest): Map<String, EmbeddingResponse> {
+    fun embed(@RequestBody request: EmbeddingRequest): EmbeddingResponseDto {
         val embeddingResponse = embeddingModel.embedForResponse(listOf(request.message))
-        return mapOf("embedding" to embeddingResponse)
+        return EmbeddingResponseDto(embedding = embeddingResponse)
     }
 }
