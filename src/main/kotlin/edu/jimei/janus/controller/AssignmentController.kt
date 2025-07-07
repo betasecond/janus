@@ -16,7 +16,6 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/assignments")
-@CrossOrigin(origins = ["*"])
 class AssignmentController(
     private val assignmentService: AssignmentService,
     private val courseService: CourseService

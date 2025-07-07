@@ -16,7 +16,6 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/notifications")
-@CrossOrigin(origins = ["*"])
 class NotificationController(
     private val notificationService: NotificationService
 ) {

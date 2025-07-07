@@ -18,7 +18,6 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/questions")
-@CrossOrigin(origins = ["*"])
 class QuestionController(
     private val questionService: QuestionService
 ) {

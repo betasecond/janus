@@ -15,7 +15,6 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/courses")
-@CrossOrigin(origins = ["*"]) // 开发环境，生产环境需要配置具体域名
 class CourseController(
     private val courseService: CourseService
 ) {
