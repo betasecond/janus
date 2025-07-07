@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 注意要先写todo-list
+# 将要开始一个大任务时，需要新建新分支
+# 每次有小功能进展就commit
+# 并且注意暂存区管理 不要使用git add .

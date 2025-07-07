@@ -2,6 +2,11 @@ package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.NotificationService
 import edu.jimei.janus.controller.dto.*
+import edu.jimei.janus.controller.vo.NotificationStatsVO
+import edu.jimei.janus.controller.vo.NotificationSummaryVO
+import edu.jimei.janus.controller.vo.NotificationVO
+import edu.jimei.janus.controller.vo.common.MessageVO
+import edu.jimei.janus.controller.vo.toVo
 import edu.jimei.janus.domain.notification.NotificationType
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +22,7 @@ class NotificationController(
 ) {
 
     @PostMapping
-    fun sendNotification(@RequestBody createDto: CreateNotificationDto): ResponseEntity<NotificationDto> {
+    fun sendNotification(@RequestBody createDto: CreateNotificationDto): ResponseEntity<NotificationVO> {
         val notification = notificationService.sendNotification(
             title = createDto.title,
             content = createDto.content,
@@ -26,11 +31,11 @@ class NotificationController(
             senderId = createDto.senderId
         )
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(notification.toDto())
+        return ResponseEntity.status(HttpStatus.CREATED).body(notification.toVo())
     }
 
     @PostMapping("/broadcast")
-    fun broadcastNotification(@RequestBody broadcastDto: BroadcastNotificationDto): ResponseEntity<List<NotificationDto>> {
+    fun broadcastNotification(@RequestBody broadcastDto: BroadcastNotificationDto): ResponseEntity<List<NotificationVO>> {
         val notifications = notificationService.broadcastToRole(
             title = broadcastDto.title,
             content = broadcastDto.content,
@@ -39,8 +44,8 @@ class NotificationController(
             senderId = broadcastDto.senderId
         )
         
-        val notificationDtos = notifications.map { it.toDto() }
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationDtos)
+        val notificationVos = notifications.map { it.toVo() }
+        return ResponseEntity.status(HttpStatus.CREATED).body(notificationVos)
     }
 
     @GetMapping("/user/{userId}")
@@ -48,19 +53,19 @@ class NotificationController(
         @PathVariable userId: UUID,
         @RequestParam(required = false) unreadOnly: Boolean = false,
         @RequestParam(required = false) type: NotificationType?
-    ): ResponseEntity<List<NotificationDto>> {
+    ): ResponseEntity<List<NotificationVO>> {
         val notifications = when {
             unreadOnly -> notificationService.getUnreadNotifications(userId)
             type != null -> notificationService.getNotificationsByRecipientAndType(userId, type)
             else -> notificationService.getNotificationsByRecipient(userId)
         }
 
-        val notificationDtos = notifications.map { it.toDto() }
-        return ResponseEntity.ok(notificationDtos)
+        val notificationVos = notifications.map { it.toVo() }
+        return ResponseEntity.ok(notificationVos)
     }
 
     @GetMapping("/user/{userId}/summary")
-    fun getUserNotificationSummary(@PathVariable userId: UUID): ResponseEntity<NotificationSummaryDto> {
+    fun getUserNotificationSummary(@PathVariable userId: UUID): ResponseEntity<NotificationSummaryVO> {
         val allNotifications = notificationService.getNotificationsByRecipient(userId)
         val unreadCount = notificationService.getUnreadCount(userId)
         
@@ -68,7 +73,7 @@ class NotificationController(
             allNotifications.count { it.type == type }.toLong()
         }
         
-        val summary = NotificationSummaryDto(
+        val summary = NotificationSummaryVO(
             totalCount = allNotifications.size.toLong(),
             unreadCount = unreadCount,
             byType = byType
@@ -81,25 +86,21 @@ class NotificationController(
     fun markAsRead(
         @PathVariable id: UUID,
         @RequestParam userId: UUID
-    ): ResponseEntity<NotificationDto> {
+    ): ResponseEntity<NotificationVO> {
         val notification = notificationService.markAsRead(id, userId)
-        return ResponseEntity.ok(notification.toDto())
+        return ResponseEntity.ok(notification.toVo())
     }
 
     @PutMapping("/user/{userId}/read-all")
-    fun markAllAsRead(@PathVariable userId: UUID): ResponseEntity<Map<String, String>> {
+    fun markAllAsRead(@PathVariable userId: UUID): ResponseEntity<MessageVO> {
         notificationService.markAllAsRead(userId)
-        return ResponseEntity.ok(mapOf("message" to "All notifications marked as read"))
+        return ResponseEntity.ok(MessageVO("All notifications marked as read"))
     }
 
     @PostMapping("/mark-read")
-    fun markMultipleAsRead(@RequestBody markReadDto: MarkReadDto): ResponseEntity<Map<String, String>> {
-        // 注意：这里简化实现，实际应该验证用户权限
-        markReadDto.notificationIds.forEach { notificationId ->
-            // 需要传入正确的userId，这里需要从认证上下文获取
-            // notificationService.markAsRead(notificationId, currentUserId)
-        }
-        return ResponseEntity.ok(mapOf("message" to "Selected notifications marked as read"))
+    fun markMultipleAsRead(@RequestBody markReadDto: MarkReadDto): ResponseEntity<MessageVO> {
+        notificationService.markMultipleAsRead(markReadDto.notificationIds, markReadDto.userId)
+        return ResponseEntity.ok(MessageVO("Selected notifications marked as read"))
     }
 
     @DeleteMapping("/{id}")
@@ -117,20 +118,20 @@ class NotificationController(
     }
 
     @GetMapping("/type/{type}")
-    fun getNotificationsByType(@PathVariable type: NotificationType): ResponseEntity<List<NotificationDto>> {
+    fun getNotificationsByType(@PathVariable type: NotificationType): ResponseEntity<List<NotificationVO>> {
         val notifications = notificationService.getNotificationsByType(type)
-        val notificationDtos = notifications.map { it.toDto() }
-        return ResponseEntity.ok(notificationDtos)
+        val notificationVos = notifications.map { it.toVo() }
+        return ResponseEntity.ok(notificationVos)
     }
 
     @DeleteMapping("/cleanup")
-    fun cleanupOldNotifications(@RequestParam(defaultValue = "30") daysOld: Int): ResponseEntity<Map<String, String>> {
+    fun cleanupOldNotifications(@RequestParam(defaultValue = "30") daysOld: Int): ResponseEntity<MessageVO> {
         notificationService.deleteOldNotifications(daysOld)
-        return ResponseEntity.ok(mapOf("message" to "Old notifications cleaned up successfully"))
+        return ResponseEntity.ok(MessageVO("Old notifications cleaned up successfully"))
     }
 
     @GetMapping("/stats")
-    fun getNotificationStats(): ResponseEntity<Map<String, Any>> {
+    fun getNotificationStats(): ResponseEntity<NotificationStatsVO> {
         val allNotifications = notificationService.findAll()
         
         val statsByType = NotificationType.values().associateWith { type ->
@@ -143,10 +144,10 @@ class NotificationController(
             "unread" to allNotifications.count { !it.isRead }
         )
         
-        val stats = mapOf(
-            "total" to allNotifications.size,
-            "byType" to statsByType,
-            "readStatus" to readStats
+        val stats = NotificationStatsVO(
+            total = allNotifications.size,
+            byType = statsByType,
+            readStatus = readStats
         )
         
         return ResponseEntity.ok(stats)
@@ -158,10 +159,9 @@ class NotificationController(
         @PathVariable assignmentId: UUID,
         @RequestParam courseId: UUID,
         @RequestParam teacherId: UUID
-    ): ResponseEntity<Map<String, String>> {
-        // 这里应该调用service的便利方法
-        // notificationService.notifyAssignmentCreated(assignmentTitle, courseId, teacherId)
-        return ResponseEntity.ok(mapOf("message" to "Assignment creation notifications sent"))
+    ): ResponseEntity<MessageVO> {
+        notificationService.notifyAssignmentCreated(assignmentId, courseId, teacherId)
+        return ResponseEntity.ok(MessageVO("Assignment creation notifications sent"))
     }
 
     @PostMapping("/grade/{submissionId}/published")
@@ -170,14 +170,14 @@ class NotificationController(
         @RequestParam score: BigDecimal,
         @RequestParam studentId: UUID,
         @RequestParam teacherId: UUID
-    ): ResponseEntity<NotificationDto> {
+    ): ResponseEntity<NotificationVO> {
         val notification = notificationService.notifyGradePublished(
-            assignmentTitle = "作业", // 应该从submission获取
+            submissionId = submissionId,
             score = score,
             studentId = studentId,
             teacherId = teacherId
         )
-        return ResponseEntity.ok(notification.toDto())
+        return ResponseEntity.ok(notification.toVo())
     }
 
     // 异常处理

@@ -1,5 +1,6 @@
 package edu.jimei.janus.domain.assignment
 
+import edu.jimei.janus.domain.assignment.projection.AssignmentSubmissionCount
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -35,6 +36,9 @@ interface AssignmentSubmissionRepository : JpaRepository<AssignmentSubmission, U
     fun findByStatus(status: SubmissionStatus): List<AssignmentSubmission>
     
     fun countByAssignmentId(assignmentId: UUID): Long
+    
+    @Query("SELECT new edu.jimei.janus.domain.assignment.projection.AssignmentSubmissionCount(s.assignment.id, COUNT(s)) FROM AssignmentSubmission s WHERE s.assignment.id IN :assignmentIds GROUP BY s.assignment.id")
+    fun countByAssignmentIdIn(@Param("assignmentIds") assignmentIds: List<UUID>): List<AssignmentSubmissionCount>
     
     @Query("SELECT COUNT(s) FROM AssignmentSubmission s WHERE s.assignment.id = :assignmentId AND s.status = :status")
     fun countByAssignmentIdAndStatus(@Param("assignmentId") assignmentId: UUID, @Param("status") status: SubmissionStatus): Long

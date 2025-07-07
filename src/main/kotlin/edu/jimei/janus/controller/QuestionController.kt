@@ -1,7 +1,13 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.QuestionService
-import edu.jimei.janus.controller.dto.*
+import edu.jimei.janus.controller.dto.CreateQuestionDto
+import edu.jimei.janus.controller.dto.QuestionSearchDto
+import edu.jimei.janus.controller.dto.UpdateQuestionDto
+import edu.jimei.janus.controller.vo.QuestionStatsVO
+import edu.jimei.janus.controller.vo.common.PageVO
+import edu.jimei.janus.controller.vo.common.QuestionVO
+import edu.jimei.janus.controller.vo.common.toVo
 import edu.jimei.janus.domain.question.Difficulty
 import edu.jimei.janus.domain.question.QuestionType
 import org.springframework.data.domain.PageRequest
@@ -18,7 +24,7 @@ class QuestionController(
 ) {
 
     @PostMapping
-    fun createQuestion(@RequestBody createDto: CreateQuestionDto): ResponseEntity<QuestionDto> {
+    fun createQuestion(@RequestBody createDto: CreateQuestionDto): ResponseEntity<QuestionVO> {
         val question = questionService.createQuestion(
             type = createDto.type,
             difficulty = createDto.difficulty,
@@ -29,13 +35,13 @@ class QuestionController(
             creatorId = createDto.creatorId
         )
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(question.toDto())
+        return ResponseEntity.status(HttpStatus.CREATED).body(question.toVo())
     }
 
     @GetMapping("/{id}")
-    fun getQuestion(@PathVariable id: UUID): ResponseEntity<QuestionDto> {
+    fun getQuestion(@PathVariable id: UUID): ResponseEntity<QuestionVO> {
         val question = questionService.findById(id)
-        return ResponseEntity.ok(question.toDto())
+        return ResponseEntity.ok(question.toVo())
     }
 
     @GetMapping
@@ -47,7 +53,7 @@ class QuestionController(
         @RequestParam(required = false) subject: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): ResponseEntity<Map<String, Any>> {
+    ): ResponseEntity<PageVO<QuestionVO>> {
         val questions = when {
             type != null && difficulty != null -> questionService.findByTypeAndDifficulty(type, difficulty)
             type != null -> questionService.findByType(type)
@@ -58,30 +64,23 @@ class QuestionController(
             else -> {
                 val pageable = PageRequest.of(page, size)
                 val questionPage = questionService.findAll(pageable)
-                val questionDtos = questionPage.content.map { it.toDto() }
-                
-                return ResponseEntity.ok(mapOf(
-                    "content" to questionDtos,
-                    "totalElements" to questionPage.totalElements,
-                    "totalPages" to questionPage.totalPages,
-                    "size" to questionPage.size,
-                    "number" to questionPage.number
-                ))
+                return ResponseEntity.ok(questionPage.toVo { it.toVo() })
             }
         }
 
-        val questionDtos = questions.map { it.toDto() }
-        return ResponseEntity.ok(mapOf(
-            "content" to questionDtos,
-            "totalElements" to questionDtos.size,
-            "totalPages" to 1,
-            "size" to questionDtos.size,
-            "number" to 0
-        ))
+        val questionVos = questions.map { it.toVo() }
+        val pageVo = PageVO(
+            content = questionVos,
+            totalElements = questionVos.size.toLong(),
+            totalPages = 1,
+            size = questionVos.size,
+            number = 0
+        )
+        return ResponseEntity.ok(pageVo)
     }
 
     @PostMapping("/search")
-    fun searchQuestions(@RequestBody searchDto: QuestionSearchDto): ResponseEntity<List<QuestionDto>> {
+    fun searchQuestions(@RequestBody searchDto: QuestionSearchDto): ResponseEntity<List<QuestionVO>> {
         val questions = when {
             searchDto.knowledgePointIds != null && searchDto.difficulty != null -> 
                 questionService.findByKnowledgePointsAndDifficulty(searchDto.knowledgePointIds, searchDto.difficulty)
@@ -94,15 +93,15 @@ class QuestionController(
             else -> questionService.findAll()
         }
 
-        val questionDtos = questions.map { it.toDto() }
-        return ResponseEntity.ok(questionDtos)
+        val questionVos = questions.map { it.toVo() }
+        return ResponseEntity.ok(questionVos)
     }
 
     @PutMapping("/{id}")
     fun updateQuestion(
         @PathVariable id: UUID,
         @RequestBody updateDto: UpdateQuestionDto
-    ): ResponseEntity<QuestionDto> {
+    ): ResponseEntity<QuestionVO> {
         val updatedQuestion = questionService.updateQuestion(
             questionId = id,
             type = updateDto.type,
@@ -113,7 +112,7 @@ class QuestionController(
             knowledgePointIds = updateDto.knowledgePointIds
         )
         
-        return ResponseEntity.ok(updatedQuestion.toDto())
+        return ResponseEntity.ok(updatedQuestion.toVo())
     }
 
     @DeleteMapping("/{id}")
@@ -123,7 +122,7 @@ class QuestionController(
     }
 
     @GetMapping("/stats")
-    fun getQuestionStats(): ResponseEntity<Map<String, Any>> {
+    fun getQuestionStats(): ResponseEntity<QuestionStatsVO> {
         val allQuestions = questionService.findAll()
         
         val statsByType = QuestionType.values().associateWith { type ->
@@ -134,10 +133,10 @@ class QuestionController(
             allQuestions.count { it.difficulty == difficulty }
         }
         
-        val stats = mapOf(
-            "total" to allQuestions.size,
-            "byType" to statsByType,
-            "byDifficulty" to statsByDifficulty
+        val stats = QuestionStatsVO(
+            total = allQuestions.size,
+            byType = statsByType,
+            byDifficulty = statsByDifficulty
         )
         
         return ResponseEntity.ok(stats)

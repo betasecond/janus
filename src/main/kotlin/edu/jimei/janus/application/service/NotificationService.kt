@@ -4,6 +4,9 @@ import edu.jimei.janus.domain.notification.Notification
 import edu.jimei.janus.domain.notification.NotificationRepository
 import edu.jimei.janus.domain.notification.NotificationType
 import edu.jimei.janus.domain.user.UserRepository
+import edu.jimei.janus.domain.course.CourseRepository
+import edu.jimei.janus.domain.assignment.AssignmentRepository
+import edu.jimei.janus.domain.assignment.AssignmentSubmissionRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -14,7 +17,10 @@ import java.util.UUID
 @Transactional
 class NotificationService(
     private val notificationRepository: NotificationRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val courseRepository: CourseRepository,
+    private val assignmentRepository: AssignmentRepository,
+    private val submissionRepository: AssignmentSubmissionRepository
 ) {
 
     fun sendNotification(
@@ -101,6 +107,13 @@ class NotificationService(
         return notificationRepository.save(notification)
     }
 
+    fun markMultipleAsRead(notificationIds: List<UUID>, recipientId: UUID) {
+        if (notificationIds.isEmpty()) {
+            return
+        }
+        notificationRepository.markAsReadByIdsAndRecipientId(notificationIds, recipientId, LocalDateTime.now())
+    }
+
     fun markAllAsRead(recipientId: UUID) {
         notificationRepository.markAllAsReadByRecipientId(recipientId, LocalDateTime.now())
     }
@@ -132,15 +145,41 @@ class NotificationService(
     }
 
     // 便利方法：发送作业相关通知
-    fun notifyAssignmentCreated(assignmentTitle: String, courseId: UUID, teacherId: UUID) {
-        // 这里可以获取课程的所有学生并发送通知
-        // 简化实现，实际应该查询课程的学生列表
+    fun notifyAssignmentCreated(assignmentId: UUID, courseId: UUID, teacherId: UUID) {
+        val assignment = assignmentRepository.findById(assignmentId).orElseThrow {
+            IllegalArgumentException("Assignment with ID $assignmentId not found")
+        }
+        val course = courseRepository.findById(courseId).orElseThrow {
+            IllegalArgumentException("Course with ID $courseId not found")
+        }
+        val sender = userRepository.findById(teacherId).orElseThrow {
+            IllegalArgumentException("Teacher with ID $teacherId not found")
+        }
+
         val title = "新作业发布"
-        val content = "教师发布了新作业：$assignmentTitle"
-        
-        // TODO: 实现向课程所有学生发送通知的逻辑
-    }    // 便利方法：发送成绩通知
-    fun notifyGradePublished(assignmentTitle: String, score: BigDecimal, studentId: UUID, teacherId: UUID): Notification {
+        val content = "课程《${course.name}》发布了新作业：${assignment.title}"
+
+        val notifications = course.students.map { student ->
+            Notification(
+                title = title,
+                content = content,
+                type = NotificationType.ASSIGNMENT,
+                recipient = student,
+                sender = sender
+            )
+        }
+
+        if (notifications.isNotEmpty()) {
+            notificationRepository.saveAll(notifications)
+        }
+    }
+
+    // 便利方法：发送成绩通知
+    fun notifyGradePublished(submissionId: UUID, score: BigDecimal, studentId: UUID, teacherId: UUID): Notification {
+        val submission = submissionRepository.findById(submissionId).orElseThrow {
+            IllegalArgumentException("Submission with ID $submissionId not found")
+        }
+        val assignmentTitle = submission.assignment.title
         val title = "作业已批改"
         val content = "您的作业《$assignmentTitle》已批改完成，得分：$score"
         

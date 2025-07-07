@@ -1,14 +1,13 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.EmbeddingService
+import edu.jimei.janus.controller.vo.EmbeddingVO
+import edu.jimei.janus.controller.vo.common.StatusVO
 import org.springframework.ai.embedding.EmbeddingModel
-import org.springframework.ai.embedding.EmbeddingResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 
@@ -22,9 +21,9 @@ class EmbeddingController(
 ) {
 
     @PostMapping("/embedding/store")
-    fun embedAndStore(@RequestBody request: EmbeddingRequest): ResponseEntity<Map<String, String>> {
+    fun embedAndStore(@RequestBody request: EmbeddingRequest): ResponseEntity<StatusVO> {
         embeddingService.embedAndStore(request.message)
-        return ResponseEntity.ok(mapOf("status" to "success", "message" to "Embedding stored successfully."))
+        return ResponseEntity.ok(StatusVO(status = "success", message = "Embedding stored successfully."))
     }
 
 //    @GetMapping("/embedding/similar")
@@ -34,8 +33,8 @@ class EmbeddingController(
 //    }
 
     @PostMapping("/embedding")
-    fun embed(@RequestBody request: EmbeddingRequest): Map<String, EmbeddingResponse> {
+    fun embed(@RequestBody request: EmbeddingRequest): EmbeddingVO {
         val embeddingResponse = embeddingModel.embedForResponse(listOf(request.message))
-        return mapOf("embedding" to embeddingResponse)
+        return EmbeddingVO(embedding = embeddingResponse)
     }
 }

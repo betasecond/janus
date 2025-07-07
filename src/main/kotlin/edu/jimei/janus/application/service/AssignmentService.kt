@@ -151,9 +151,7 @@ class AssignmentService(
     }
 
     fun gradeSubmission(submissionId: UUID, scores: Map<UUID, Boolean>): AssignmentSubmission {
-        val submission = submissionRepository.findById(submissionId).orElseThrow {
-            IllegalArgumentException("Submission with ID $submissionId not found")
-        }
+        val submission = findSubmissionById(submissionId)
 
         submission.status = SubmissionStatus.GRADING
 
@@ -170,6 +168,12 @@ class AssignmentService(
         return submissionRepository.save(submission)
     }
 
+    fun findSubmissionById(submissionId: UUID): AssignmentSubmission {
+        return submissionRepository.findById(submissionId).orElseThrow {
+            IllegalArgumentException("Submission with ID $submissionId not found")
+        }
+    }
+
     fun getSubmissionsByAssignment(assignmentId: UUID): List<AssignmentSubmission> {
         return submissionRepository.findByAssignmentId(assignmentId)
     }
@@ -184,6 +188,14 @@ class AssignmentService(
 
     fun getGradedSubmissionCount(assignmentId: UUID): Long {
         return submissionRepository.countByAssignmentIdAndStatus(assignmentId, SubmissionStatus.GRADED)
+    }
+
+    fun getSubmissionCounts(assignmentIds: List<UUID>): Map<UUID, Long> {
+        if (assignmentIds.isEmpty()) {
+            return emptyMap()
+        }
+        return submissionRepository.countByAssignmentIdIn(assignmentIds)
+            .associate { it.assignmentId to it.submissionCount }
     }
 
     fun deleteAssignment(assignmentId: UUID) {
