@@ -40,8 +40,8 @@ class StorageService(
                     predicates.add(cb.like(root.get("originalFilename"), "%${it.trim()}%"))
                 }
             }
-            
-            query.orderBy(cb.desc(root.get<Any>("createdAt")))
+
+            query?.orderBy(cb.desc(root.get<Any>("createdAt")))
 
             cb.and(*predicates.toTypedArray())
         }
