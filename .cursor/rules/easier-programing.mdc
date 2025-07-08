@@ -1,7 +1,5 @@
 ---
-description:
-globs:
-alwaysApply: false
+alwaysApply: true
 ---
 # 注意要先写todo-list
 # 将要开始一个大任务时，需要新建新分支
