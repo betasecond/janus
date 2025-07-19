@@ -2,10 +2,12 @@ package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.OssService
 import edu.jimei.janus.application.service.StorageService
+import edu.jimei.janus.controller.vo.ResourceVO
 import edu.jimei.janus.controller.vo.StorageObjectVO
 import edu.jimei.janus.controller.vo.common.PageVO
 import edu.jimei.janus.controller.vo.common.StatusVO
 import edu.jimei.janus.controller.vo.common.toVo
+import edu.jimei.janus.controller.vo.toResourceVo
 import edu.jimei.janus.controller.vo.toVo
 import edu.jimei.janus.domain.user.UserRepository
 import edu.jimei.janus.infrastructure.pulsar.FileProcessingProducer

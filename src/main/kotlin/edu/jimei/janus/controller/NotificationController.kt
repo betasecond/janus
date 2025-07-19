@@ -20,6 +20,20 @@ class NotificationController(
     private val notificationService: NotificationService
 ) {
 
+    /**
+     * Retrieves all notifications.
+     *
+     * NOTE: This is a general-purpose endpoint for demonstration, mirroring the
+     * frontend mock API. In a production environment, you would typically want
+     * to paginate this result and apply security constraints.
+     */
+    @GetMapping
+    fun getAllNotifications(): ResponseEntity<List<NotificationVO>> {
+        val notifications = notificationService.findAll()
+        val notificationVos = notifications.map { it.toVo() }
+        return ResponseEntity.ok(notificationVos)
+    }
+
     @PostMapping
     fun sendNotification(@RequestBody createDto: CreateNotificationDto): ResponseEntity<NotificationVO> {
         val notification = notificationService.sendNotification(
