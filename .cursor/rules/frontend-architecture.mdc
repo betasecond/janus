@@ -1,0 +1,19 @@
+# Janus-eye 前端架构
+
+这是一个基于 Vue 3, Vite, TypeScript 和 Tailwind CSS 的前端项目。
+
+## 主要目录结构
+
+-   `src/api`: API 请求模块。封装了所有与后端交互的请求。
+-   `src/assets`: 存放静态资源，如图片、SVG 等。
+-   `src/components`: 可复用的 Vue 组件。
+    -   `base/`: 基础组件，如 `Card.vue`, `Icon.vue`。
+    -   `layout/`: 页面布局组件，如 `Header.vue`, `Sidebar.vue`。
+-   `src/views`: 页面级别的 Vue 组件。每个 `.vue` 文件代表一个页面或一个主要的功能区。
+-   `src/router.ts`: Vue Router 的配置，定义了应用的路由规则。
+-   `src/store.ts`: 状态管理 (Pinia) 的配置。
+-   `src/types`: TypeScript 类型定义。
+-   `index.html`: 应用的 HTML 入口文件。
+-   `package.json`: 项目依赖和脚本配置。
+-   `vite.config.ts`: Vite 构建工具的配置文件。
+-   `tailwind.config.js`: Tailwind CSS 的配置文件。

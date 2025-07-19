@@ -1,0 +1,15 @@
+# Janus 后端架构
+
+这是一个基于 Kotlin 和 Spring Boot 的后端项目。
+
+## 主要目录结构
+
+-   `src/main/kotlin/edu/jimei/janus/application/service`: 核心业务逻辑层。每个 Service 负责一项具体的业务功能，例如 `CourseService` 或 `AssignmentService`。
+-   `src/main/kotlin/edu/jimei/janus/controller`: API 控制器层。负责接收前端请求，调用 `Service` 处理，并返回响应。DTOs (Data Transfer Objects) 和 VOs (View Objects) 也在这里定义。
+-   `src/main/kotlin/edu/jimei/janus/domain`: 领域模型层。定义了核心的业务实体 (Entities) 和它们的数据仓库 (Repositories)，例如 `Course` 和 `CourseRepository`。
+-   `src/main/kotlin/edu/jimei/janus/infrastructure`: 基础设施配置层。包含了与外部系统集成的配置，如数据库连接、对象存储 (OSS)、消息队列 (Pulsar) 和向量数据库。
+-   `src/main/resources/application.yaml`: Spring Boot 主配置文件。
+-   `src/main/resources/application-dev.yml`: 开发环境的特定配置。
+-   `src/main/resources/db/migration`: 使用 Flyway 管理的数据库迁移脚本。
+-   `build.gradle.kts`: Gradle 构建脚本，定义了项目依赖和构建过程。
+ 
