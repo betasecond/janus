@@ -2,6 +2,7 @@ package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.QuestionService
 import edu.jimei.janus.controller.dto.CreateQuestionDto
+import edu.jimei.janus.controller.dto.QuestionQuery
 import edu.jimei.janus.controller.dto.QuestionSearchDto
 import edu.jimei.janus.controller.dto.UpdateQuestionDto
 import edu.jimei.janus.controller.vo.QuestionStatsVO
@@ -33,7 +34,7 @@ class QuestionController(
             knowledgePointIds = createDto.knowledgePointIds,
             creatorId = createDto.creatorId
         )
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(question.toVo())
     }
 
@@ -45,45 +46,21 @@ class QuestionController(
 
     @GetMapping
     fun getAllQuestions(
-        @RequestParam(required = false) type: QuestionType?,
-        @RequestParam(required = false) difficulty: Difficulty?,
-        @RequestParam(required = false) creatorId: UUID?,
-        @RequestParam(required = false) knowledgePointId: UUID?,
-        @RequestParam(required = false) subject: String?,
+        @ModelAttribute query: QuestionQuery,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<PageVO<QuestionVO>> {
-        val questions = when {
-            type != null && difficulty != null -> questionService.findByTypeAndDifficulty(type, difficulty)
-            type != null -> questionService.findByType(type)
-            difficulty != null -> questionService.findByDifficulty(difficulty)
-            creatorId != null -> questionService.findByCreator(creatorId)
-            knowledgePointId != null -> questionService.findByKnowledgePoint(knowledgePointId)
-            subject != null -> questionService.findBySubject(subject)
-            else -> {
-                val pageable = PageRequest.of(page, size)
-                val questionPage = questionService.findAll(pageable)
-                return ResponseEntity.ok(questionPage.toVo { it.toVo() })
-            }
-        }
-
-        val questionVos = questions.map { it.toVo() }
-        val pageVo = PageVO(
-            content = questionVos,
-            totalElements = questionVos.size.toLong(),
-            totalPages = 1,
-            size = questionVos.size,
-            number = 0
-        )
-        return ResponseEntity.ok(pageVo)
+        val pageable = PageRequest.of(page, size)
+        val questionPage = questionService.searchQuestions(query, pageable)
+        return ResponseEntity.ok(questionPage.toVo { it.toVo() })
     }
 
     @PostMapping("/search")
     fun searchQuestions(@RequestBody searchDto: QuestionSearchDto): ResponseEntity<List<QuestionVO>> {
         val questions = when {
-            searchDto.knowledgePointIds != null && searchDto.difficulty != null -> 
+            searchDto.knowledgePointIds != null && searchDto.difficulty != null ->
                 questionService.findByKnowledgePointsAndDifficulty(searchDto.knowledgePointIds, searchDto.difficulty)
-            searchDto.type != null && searchDto.difficulty != null -> 
+            searchDto.type != null && searchDto.difficulty != null ->
                 questionService.findByTypeAndDifficulty(searchDto.type, searchDto.difficulty)
             searchDto.type != null -> questionService.findByType(searchDto.type)
             searchDto.difficulty != null -> questionService.findByDifficulty(searchDto.difficulty)
@@ -110,7 +87,7 @@ class QuestionController(
             explanation = updateDto.explanation,
             knowledgePointIds = updateDto.knowledgePointIds
         )
-        
+
         return ResponseEntity.ok(updatedQuestion.toVo())
     }
 
@@ -123,21 +100,21 @@ class QuestionController(
     @GetMapping("/stats")
     fun getQuestionStats(): ResponseEntity<QuestionStatsVO> {
         val allQuestions = questionService.findAll()
-        
+
         val statsByType = QuestionType.values().associateWith { type ->
             allQuestions.count { it.type == type }
         }
-        
+
         val statsByDifficulty = Difficulty.values().associateWith { difficulty ->
             allQuestions.count { it.difficulty == difficulty }
         }
-        
+
         val stats = QuestionStatsVO(
             total = allQuestions.size,
             byType = statsByType,
             byDifficulty = statsByDifficulty
         )
-        
+
         return ResponseEntity.ok(stats)
     }
 

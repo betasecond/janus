@@ -1,5 +1,5 @@
 package edu.jimei.janus.application.service
-
+import edu.jimei.janus.domain.user.User
 import edu.jimei.janus.domain.knowledge.KnowledgePoint
 import edu.jimei.janus.domain.knowledge.KnowledgePointRepository
 import edu.jimei.janus.domain.question.Difficulty
@@ -7,11 +7,13 @@ import edu.jimei.janus.domain.question.Question
 import edu.jimei.janus.domain.question.QuestionRepository
 import edu.jimei.janus.domain.question.QuestionType
 import edu.jimei.janus.domain.user.UserRepository
+import jakarta.persistence.criteria.Predicate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @Service
 @Transactional
@@ -74,7 +76,7 @@ class QuestionService(
         content?.let { question.content = it }
         correctAnswer?.let { question.correctAnswer = it }
         explanation?.let { question.explanation = it }
-        
+
         knowledgePointIds?.let { ids ->
             val knowledgePoints = knowledgePointRepository.findAllById(ids).toMutableSet()
             if (knowledgePoints.size != ids.size) {
@@ -111,7 +113,34 @@ class QuestionService(
     }
 
     fun findBySubject(subject: String): List<Question> {
-        return questionRepository.findByKnowledgePointSubject(subject)
+        return questionRepository.findBySubject(subject)
+    }
+
+    @Transactional(readOnly = true)
+    fun searchQuestions(query: edu.jimei.janus.controller.dto.QuestionQuery, pageable: Pageable): Page<Question> {
+        val spec = Specification<Question> { root, criteriaQuery, criteriaBuilder ->
+            val predicates = mutableListOf<Predicate>()
+
+            query.type?.let {
+                predicates.add(criteriaBuilder.equal(root.get<QuestionType>("type"), it))
+            }
+            query.difficulty?.let {
+                predicates.add(criteriaBuilder.equal(root.get<Difficulty>("difficulty"), it))
+            }
+            query.creatorId?.let {
+                predicates.add(criteriaBuilder.equal(root.get<User>("creator").get<UUID>("id"), it))
+            }
+            query.subject?.let {
+                predicates.add(criteriaBuilder.like(root.get("subject"), "%$it%"))
+            }
+            query.knowledgePointId?.let {
+                val join = root.join<Question, KnowledgePoint>("knowledgePoints")
+                predicates.add(criteriaBuilder.equal(join.get<UUID>("id"), it))
+            }
+
+            criteriaBuilder.and(*predicates.toTypedArray())
+        }
+        return questionRepository.findAll(spec, pageable)
     }
 
     fun findByTypeAndDifficulty(type: QuestionType, difficulty: Difficulty): List<Question> {

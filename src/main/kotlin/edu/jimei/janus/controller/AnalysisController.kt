@@ -4,6 +4,7 @@ import edu.jimei.janus.controller.vo.StudentAnalysisVO
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
@@ -23,7 +24,7 @@ class AnalysisController {
      * to integrate with a working endpoint.
      */
     @GetMapping
-    fun getStudentAnalysis(): ResponseEntity<List<StudentAnalysisVO>> {
+    fun getStudentAnalysis(@RequestParam(required = false) userId: UUID?): ResponseEntity<List<StudentAnalysisVO>> {
         // Mocked data, similar to the frontend's 'mockStudentAnalysis'
         val mockAnalysis = listOf(
             StudentAnalysisVO(
