@@ -1,64 +1,39 @@
 package edu.jimei.janus.controller.vo
 
-import edu.jimei.janus.controller.vo.common.QuestionVO
-import edu.jimei.janus.controller.vo.common.UserVO
-import edu.jimei.janus.controller.vo.common.toVo
-import edu.jimei.janus.domain.assignment.Assignment
-import edu.jimei.janus.domain.assignment.AssignmentSubmission
-import edu.jimei.janus.domain.assignment.SubmissionAnswer
-import edu.jimei.janus.domain.assignment.SubmissionStatus
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.util.UUID
 
+/**
+ * 作业提交视图对象
+ * 符合前端规范的作业提交数据结构
+ * @property id 提交ID（字符串格式）
+ * @property assignmentId 作业ID（字符串格式）
+ * @property studentId 学生ID（字符串格式）
+ * @property answers 提交答案列表
+ * @property score 得分
+ * @property status 提交状态（大写格式：SUBMITTED, GRADING, GRADED）
+ * @property submittedAt 提交时间（ISO 8601格式字符串）
+ */
 data class AssignmentSubmissionVO(
-    val id: UUID,
-    val assignment: AssignmentBriefVO,
-    val student: UserVO,
+    val id: String,
+    val assignmentId: String,
+    val studentId: String,
     val answers: List<SubmissionAnswerVO>,
     val score: BigDecimal?,
-    val status: SubmissionStatus,
-    val submittedAt: LocalDateTime?
+    val status: String, // SUBMITTED, GRADING, GRADED
+    val submittedAt: String? // ISO 8601 format
 )
 
-fun AssignmentSubmission.toVo(): AssignmentSubmissionVO {
-    return AssignmentSubmissionVO(
-        id = this.id ?: throw IllegalArgumentException("AssignmentSubmission id cannot be null"),
-        assignment = this.assignment.toBriefVo(),
-        student = this.student.toVo(),
-        answers = this.answers.map { it.toVo() },
-        score = this.score,
-        status = this.status,
-        submittedAt = this.submittedAt
-    )
-}
-
-data class AssignmentBriefVO(
-    val id: UUID,
-    val title: String,
-    val dueDate: LocalDateTime?
-)
-
-fun Assignment.toBriefVo(): AssignmentBriefVO {
-    return AssignmentBriefVO(
-        id = this.id ?: throw IllegalArgumentException("Assignment id cannot be null"),
-        title = this.title,
-        dueDate = this.dueDate
-    )
-}
-
+/**
+ * 提交答案视图对象
+ * 符合前端规范的提交答案数据结构
+ * @property id 答案ID（字符串格式）
+ * @property questionId 题目ID（字符串格式）
+ * @property answer 学生答案（JSON格式字符串）
+ * @property isCorrect 是否正确
+ */
 data class SubmissionAnswerVO(
-    val id: UUID,
-    val question: QuestionVO,
-    val answer: String?,
+    val id: String,
+    val questionId: String,
+    val answer: String?, // JSON format
     val isCorrect: Boolean?
 )
-
-fun SubmissionAnswer.toVo(): SubmissionAnswerVO {
-    return SubmissionAnswerVO(
-        id = this.id ?: throw IllegalArgumentException("SubmissionAnswer id cannot be null"),
-        question = this.question.toVo(),
-        answer = this.answer,
-        isCorrect = this.isCorrect
-    )
-} 

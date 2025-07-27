@@ -1,35 +1,22 @@
 package edu.jimei.janus.controller.vo
 
-import edu.jimei.janus.controller.vo.common.CourseVO
-import edu.jimei.janus.controller.vo.common.QuestionVO
-import edu.jimei.janus.controller.vo.common.UserVO
-import edu.jimei.janus.controller.vo.common.toVo
-import edu.jimei.janus.domain.assignment.Assignment
-import java.time.LocalDateTime
-import java.util.UUID
-
+/**
+ * 作业视图对象
+ * 符合前端规范的作业数据结构
+ * @property id 作业ID（字符串格式）
+ * @property title 作业标题
+ * @property description 作业描述
+ * @property dueDate 截止日期（ISO 8601格式字符串）
+ * @property courseId 课程ID（字符串格式）
+ * @property questionIds 题目ID数组（字符串数组）
+ * @property createdAt 创建时间（ISO 8601格式字符串）
+ */
 data class AssignmentVO(
-    val id: UUID,
+    val id: String,
     val title: String,
-    val description: String?,
-    val course: CourseVO,
-    val creator: UserVO,
-    val questions: List<QuestionVO>,
-    val dueDate: LocalDateTime?,
-    val createdAt: LocalDateTime?,
-    val updatedAt: LocalDateTime?
+    val description: String,
+    val dueDate: String?, // ISO 8601 format
+    val courseId: String,
+    val questionIds: List<String>,
+    val createdAt: String // ISO 8601 format
 )
-
-fun Assignment.toVo(): AssignmentVO {
-    return AssignmentVO(
-        id = this.id ?: throw IllegalArgumentException("Assignment id cannot be null"),
-        title = this.title,
-        description = this.description,
-        course = this.course.toVo(),
-        creator = this.creator.toVo(),
-        questions = this.questions.map { it.toVo() },
-        dueDate = this.dueDate,
-        createdAt = this.createdAt,
-        updatedAt = this.updatedAt
-    )
-} 

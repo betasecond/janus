@@ -158,19 +158,28 @@
   - 更新分页查询和搜索功能
   - _需求: 1.1, 4.1, 8.1_
 
-- [ ] 5. 实现作业相关VO映射器
+- [x] 5. 实现作业相关VO映射器
+
+
+
+
+
   - 创建AssignmentVOMapper处理作业实体映射
   - 确保questionIds数组格式、状态枚举值对齐
   - _需求: 5.1, 5.2, 5.3_
 
-- [ ] 5.1 创建AssignmentVO和相关数据类
+- [x] 5.1 创建AssignmentVO和相关数据类
+
+
   - 定义符合前端规范的 `AssignmentVO` 数据类
   - 创建 `AssignmentSubmissionVO` 和 `SubmissionAnswerVO` 数据类
   - 确保 `questionIds` 字段为字符串数组，`courseId` 为字符串
   - 确保状态枚举值为大写格式
   - _需求: 5.1, 5.2, 5.3_
 
-- [ ] 5.2 实现AssignmentVOMapper
+- [x] 5.2 实现AssignmentVOMapper
+
+
   - 创建 `AssignmentVOMapper` 组件类
   - 实现questions关联转换为questionIds数组
   - 实现course关联转换为courseId字符串
@@ -178,7 +187,9 @@
   - 实现日期字段的ISO 8601格式转换
   - _需求: 5.1, 5.2, 5.3, 10.1_
 
-- [ ] 5.3 更新AssignmentController使用新的响应格式
+- [x] 5.3 更新AssignmentController使用新的响应格式
+
+
   - 修改所有作业相关的API端点返回统一响应格式
   - 集成AssignmentVOMapper进行实体到VO的转换
   - 实现作业提交相关的API端点
