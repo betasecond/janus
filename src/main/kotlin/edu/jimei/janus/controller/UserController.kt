@@ -8,8 +8,9 @@ import edu.jimei.janus.domain.user.UserRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.UUID
+import java.util.*
 
 /**
  * 用户控制器
@@ -49,10 +50,10 @@ class UserController(
     ): ApiResponse<PageVO<UserVO>> {
         val sortDirection = if (direction.lowercase() == "desc") Sort.Direction.DESC else Sort.Direction.ASC
         val pageable: Pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort))
-        
+
         val userPage = userRepository.findAll(pageable)
         val userVOs = userPage.content.map { userVOMapper.toVO(it) }
-        
+
         val pageVO = PageVO(
             content = userVOs,
             totalElements = userPage.totalElements,
@@ -60,7 +61,7 @@ class UserController(
             size = userPage.size,
             number = userPage.number
         )
-        
+
         return ApiResponse(data = pageVO)
     }
 
@@ -70,11 +71,14 @@ class UserController(
      * @return ApiResponse<UserVO> 包装的用户信息
      */
     @GetMapping("/{id}")
-    fun getUserById(@PathVariable id: UUID): ApiResponse<UserVO> {
-        val user = userRepository.findById(id)
-            .orElseThrow { NoSuchElementException("User with id $id not found") }
-        
-        val userVO = userVOMapper.toVO(user)
-        return ApiResponse(data = userVO)
+    fun getUserById(@PathVariable id: UUID): ResponseEntity<ApiResponse<UserVO>> {
+        return userRepository.findById(id)
+            .map { user ->
+                val userVO = userVOMapper.toVO(user)
+                ResponseEntity.ok(ApiResponse(data = userVO))
+            }
+            .orElseGet {
+                ResponseEntity.notFound().build()
+            }
     }
-} 
+}
