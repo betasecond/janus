@@ -195,18 +195,30 @@
   - 实现作业提交相关的API端点
   - _需求: 1.1, 5.1, 5.2_
 
-- [ ] 6. 实现存储对象VO映射器
+- [x] 6. 实现存储对象VO映射器
+
+
+
+
+
   - 创建StorageObjectVOMapper处理存储对象映射
   - 确保url字段、uploaderId字段、枚举值对齐
   - _需求: 6.1, 6.2, 6.3_
 
-- [ ] 6.1 创建StorageObjectVO数据类
+- [x] 6.1 创建StorageObjectVO数据类
+
+
+
+
+
   - 定义符合前端规范的 `StorageObjectVO` 数据类
   - 包含 `id`, `objectKey`, `url`, `originalFilename`, `contentType`, `fileSize`, `uploaderId`, `createdAt` 字段
   - 确保 `uploaderId` 字段为字符串类型
   - _需求: 6.1, 6.2_
 
-- [ ] 6.2 实现StorageObjectVOMapper
+- [x] 6.2 实现StorageObjectVOMapper
+
+
   - 创建 `StorageObjectVOMapper` 组件类
   - 实现uploader关联转换为uploaderId字符串
   - 生成文件的可访问URL
@@ -214,7 +226,9 @@
   - 实现日期字段的ISO 8601格式转换
   - _需求: 6.1, 6.2, 6.3, 10.1_
 
-- [ ] 6.3 更新StorageController使用新的响应格式
+- [x] 6.3 更新StorageController使用新的响应格式
+
+
   - 修改所有存储相关的API端点返回统一响应格式
   - 集成StorageObjectVOMapper进行实体到VO的转换
   - 更新文件上传和列表查询功能
