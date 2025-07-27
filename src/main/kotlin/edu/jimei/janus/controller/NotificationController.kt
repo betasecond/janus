@@ -1,12 +1,13 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.NotificationService
+import edu.jimei.janus.common.ApiResponse
 import edu.jimei.janus.controller.dto.*
+import edu.jimei.janus.controller.mapper.NotificationVOMapper
 import edu.jimei.janus.controller.vo.NotificationStatsVO
 import edu.jimei.janus.controller.vo.NotificationSummaryVO
 import edu.jimei.janus.controller.vo.NotificationVO
 import edu.jimei.janus.controller.vo.common.MessageVO
-import edu.jimei.janus.controller.vo.toVo
 import edu.jimei.janus.domain.notification.NotificationType
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +18,8 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/notifications")
 class NotificationController(
-    private val notificationService: NotificationService
+    private val notificationService: NotificationService,
+    private val notificationVOMapper: NotificationVOMapper
 ) {
 
     /**
@@ -28,14 +30,14 @@ class NotificationController(
      * to paginate this result and apply security constraints.
      */
     @GetMapping
-    fun getAllNotifications(): ResponseEntity<List<NotificationVO>> {
+    fun getAllNotifications(): ResponseEntity<ApiResponse<List<NotificationVO>>> {
         val notifications = notificationService.findAll()
-        val notificationVos = notifications.map { it.toVo() }
-        return ResponseEntity.ok(notificationVos)
+        val notificationVos = notifications.map { notificationVOMapper.toVO(it) }
+        return ResponseEntity.ok(ApiResponse(data = notificationVos))
     }
 
     @PostMapping
-    fun sendNotification(@RequestBody createDto: CreateNotificationDto): ResponseEntity<NotificationVO> {
+    fun sendNotification(@RequestBody createDto: CreateNotificationDto): ResponseEntity<ApiResponse<NotificationVO>> {
         val notification = notificationService.sendNotification(
             title = createDto.title,
             content = createDto.content,
@@ -44,11 +46,11 @@ class NotificationController(
             senderId = createDto.senderId
         )
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(notification.toVo())
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse(data = notificationVOMapper.toVO(notification)))
     }
 
     @PostMapping("/broadcast")
-    fun broadcastNotification(@RequestBody broadcastDto: BroadcastNotificationDto): ResponseEntity<List<NotificationVO>> {
+    fun broadcastNotification(@RequestBody broadcastDto: BroadcastNotificationDto): ResponseEntity<ApiResponse<List<NotificationVO>>> {
         val notifications = notificationService.broadcastToRole(
             title = broadcastDto.title,
             content = broadcastDto.content,
@@ -57,8 +59,8 @@ class NotificationController(
             senderId = broadcastDto.senderId
         )
         
-        val notificationVos = notifications.map { it.toVo() }
-        return ResponseEntity.status(HttpStatus.CREATED).body(notificationVos)
+        val notificationVos = notifications.map { notificationVOMapper.toVO(it) }
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse(data = notificationVos))
     }
 
     @GetMapping("/user/{userId}")
@@ -66,19 +68,19 @@ class NotificationController(
         @PathVariable userId: UUID,
         @RequestParam(required = false) unreadOnly: Boolean = false,
         @RequestParam(required = false) type: NotificationType?
-    ): ResponseEntity<List<NotificationVO>> {
+    ): ResponseEntity<ApiResponse<List<NotificationVO>>> {
         val notifications = when {
             unreadOnly -> notificationService.getUnreadNotifications(userId)
             type != null -> notificationService.getNotificationsByRecipientAndType(userId, type)
             else -> notificationService.getNotificationsByRecipient(userId)
         }
 
-        val notificationVos = notifications.map { it.toVo() }
-        return ResponseEntity.ok(notificationVos)
+        val notificationVos = notifications.map { notificationVOMapper.toVO(it) }
+        return ResponseEntity.ok(ApiResponse(data = notificationVos))
     }
 
     @GetMapping("/user/{userId}/summary")
-    fun getUserNotificationSummary(@PathVariable userId: UUID): ResponseEntity<NotificationSummaryVO> {
+    fun getUserNotificationSummary(@PathVariable userId: UUID): ResponseEntity<ApiResponse<NotificationSummaryVO>> {
         val allNotifications = notificationService.getNotificationsByRecipient(userId)
         val unreadCount = notificationService.getUnreadCount(userId)
         
@@ -92,28 +94,28 @@ class NotificationController(
             byType = byType
         )
         
-        return ResponseEntity.ok(summary)
+        return ResponseEntity.ok(ApiResponse(data = summary))
     }
 
     @PutMapping("/{id}/read")
     fun markAsRead(
         @PathVariable id: UUID,
         @RequestParam userId: UUID
-    ): ResponseEntity<NotificationVO> {
+    ): ResponseEntity<ApiResponse<NotificationVO>> {
         val notification = notificationService.markAsRead(id, userId)
-        return ResponseEntity.ok(notification.toVo())
+        return ResponseEntity.ok(ApiResponse(data = notificationVOMapper.toVO(notification)))
     }
 
     @PutMapping("/user/{userId}/read-all")
-    fun markAllAsRead(@PathVariable userId: UUID): ResponseEntity<MessageVO> {
+    fun markAllAsRead(@PathVariable userId: UUID): ResponseEntity<ApiResponse<MessageVO>> {
         notificationService.markAllAsRead(userId)
-        return ResponseEntity.ok(MessageVO("All notifications marked as read"))
+        return ResponseEntity.ok(ApiResponse(data = MessageVO("All notifications marked as read")))
     }
 
     @PostMapping("/mark-read")
-    fun markMultipleAsRead(@RequestBody markReadDto: MarkReadDto): ResponseEntity<MessageVO> {
+    fun markMultipleAsRead(@RequestBody markReadDto: MarkReadDto): ResponseEntity<ApiResponse<MessageVO>> {
         notificationService.markMultipleAsRead(markReadDto.notificationIds, markReadDto.userId)
-        return ResponseEntity.ok(MessageVO("Selected notifications marked as read"))
+        return ResponseEntity.ok(ApiResponse(data = MessageVO("Selected notifications marked as read")))
     }
 
     @DeleteMapping("/{id}")
@@ -126,25 +128,25 @@ class NotificationController(
     }
 
     @GetMapping("/types")
-    fun getNotificationTypes(): ResponseEntity<List<String>> {
-        return ResponseEntity.ok(NotificationType.values().map { it.name })
+    fun getNotificationTypes(): ResponseEntity<ApiResponse<List<String>>> {
+        return ResponseEntity.ok(ApiResponse(data = NotificationType.values().map { it.name }))
     }
 
     @GetMapping("/type/{type}")
-    fun getNotificationsByType(@PathVariable type: NotificationType): ResponseEntity<List<NotificationVO>> {
+    fun getNotificationsByType(@PathVariable type: NotificationType): ResponseEntity<ApiResponse<List<NotificationVO>>> {
         val notifications = notificationService.getNotificationsByType(type)
-        val notificationVos = notifications.map { it.toVo() }
-        return ResponseEntity.ok(notificationVos)
+        val notificationVos = notifications.map { notificationVOMapper.toVO(it) }
+        return ResponseEntity.ok(ApiResponse(data = notificationVos))
     }
 
     @DeleteMapping("/cleanup")
-    fun cleanupOldNotifications(@RequestParam(defaultValue = "30") daysOld: Int): ResponseEntity<MessageVO> {
+    fun cleanupOldNotifications(@RequestParam(defaultValue = "30") daysOld: Int): ResponseEntity<ApiResponse<MessageVO>> {
         notificationService.deleteOldNotifications(daysOld)
-        return ResponseEntity.ok(MessageVO("Old notifications cleaned up successfully"))
+        return ResponseEntity.ok(ApiResponse(data = MessageVO("Old notifications cleaned up successfully")))
     }
 
     @GetMapping("/stats")
-    fun getNotificationStats(): ResponseEntity<NotificationStatsVO> {
+    fun getNotificationStats(): ResponseEntity<ApiResponse<NotificationStatsVO>> {
         val allNotifications = notificationService.findAll()
         
         val statsByType = NotificationType.values().associateWith { type ->
@@ -163,7 +165,7 @@ class NotificationController(
             readStatus = readStats
         )
         
-        return ResponseEntity.ok(stats)
+        return ResponseEntity.ok(ApiResponse(data = stats))
     }
 
     // 便利接口：发送特定类型通知
@@ -172,9 +174,9 @@ class NotificationController(
         @PathVariable assignmentId: UUID,
         @RequestParam courseId: UUID,
         @RequestParam teacherId: UUID
-    ): ResponseEntity<MessageVO> {
+    ): ResponseEntity<ApiResponse<MessageVO>> {
         notificationService.notifyAssignmentCreated(assignmentId, courseId, teacherId)
-        return ResponseEntity.ok(MessageVO("Assignment creation notifications sent"))
+        return ResponseEntity.ok(ApiResponse(data = MessageVO("Assignment creation notifications sent")))
     }
 
     @PostMapping("/grade/{submissionId}/published")
@@ -183,24 +185,24 @@ class NotificationController(
         @RequestParam score: BigDecimal,
         @RequestParam studentId: UUID,
         @RequestParam teacherId: UUID
-    ): ResponseEntity<NotificationVO> {
+    ): ResponseEntity<ApiResponse<NotificationVO>> {
         val notification = notificationService.notifyGradePublished(
             submissionId = submissionId,
             score = score,
             studentId = studentId,
             teacherId = teacherId
         )
-        return ResponseEntity.ok(notification.toVo())
+        return ResponseEntity.ok(ApiResponse(data = notificationVOMapper.toVO(notification)))
     }
 
     // 异常处理
     @ExceptionHandler(IllegalArgumentException::class)
-    fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<Map<String, String>> {
+    fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<ApiResponse<Map<String, String>>> {
         return ResponseEntity.badRequest().body(
-            mapOf(
+            ApiResponse(data = mapOf(
                 "error" to "Bad Request",
                 "message" to (ex.message ?: "Invalid request")
-            )
+            ))
         )
     }
 }

@@ -234,25 +234,36 @@
   - 更新文件上传和列表查询功能
   - _需求: 1.1, 6.1, 6.2_
 
-- [ ] 7. 实现通知相关VO映射器
+- [x] 7. 实现通知相关VO映射器
+
+
+
+
+
   - 创建NotificationVOMapper处理通知实体映射
   - 确保类型枚举值、senderId字段对齐
   - _需求: 7.1, 7.2, 7.3_
 
-- [ ] 7.1 创建NotificationVO数据类
+- [x] 7.1 创建NotificationVO数据类
+
+
   - 定义符合前端规范的 `NotificationVO` 数据类
   - 包含 `id`, `title`, `content`, `type`, `isRead`, `createdAt`, `senderId` 字段
   - 确保 `senderId` 字段为可选的字符串类型
   - _需求: 7.1, 7.2_
 
-- [ ] 7.2 实现NotificationVOMapper
+- [x] 7.2 实现NotificationVOMapper
+
+
   - 创建 `NotificationVOMapper` 组件类
   - 实现通知类型枚举值的映射和大写转换
   - 实现sender关联转换为senderId字符串
   - 实现日期字段的ISO 8601格式转换
   - _需求: 7.1, 7.2, 7.3, 10.1_
 
-- [ ] 7.3 更新NotificationController使用新的响应格式
+- [x] 7.3 更新NotificationController使用新的响应格式
+
+
   - 修改所有通知相关的API端点返回统一响应格式
   - 集成NotificationVOMapper进行实体到VO的转换
   - 更新通知查询和管理功能
