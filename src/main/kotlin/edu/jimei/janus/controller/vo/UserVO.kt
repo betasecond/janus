@@ -1,27 +1,18 @@
 package edu.jimei.janus.controller.vo
 
-import edu.jimei.janus.domain.user.User
-import java.time.LocalDateTime
-import java.util.UUID
-
+/**
+ * 用户视图对象
+ * 符合前端规范的用户数据结构
+ * @property id 用户ID（字符串格式）
+ * @property displayName 显示名称
+ * @property email 邮箱地址
+ * @property avatarUrl 头像URL
+ * @property role 用户角色（大写格式：TEACHER, STUDENT, ADMIN）
+ */
 data class UserVO(
-    val id: UUID,
-    val username: String,
+    val id: String,
+    val displayName: String,
     val email: String,
-    val displayName: String?,
-    val avatarUrl: String?,
-    val role: String,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
-)
-
-fun User.toVo(): UserVO = UserVO(
-    id = this.id!!,
-    username = this.username,
-    email = this.email,
-    displayName = this.displayName,
-    avatarUrl = this.avatarUrl,
-    role = this.role,
-    createdAt = this.createdAt!!,
-    updatedAt = this.updatedAt!!
+    val avatarUrl: String,
+    val role: String
 ) 

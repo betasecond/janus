@@ -36,25 +36,36 @@
   - 确保所有枚举值都转换为大写格式
   - _需求: 9.1, 9.2_
 
-- [ ] 2. 实现用户相关VO映射器
+- [x] 2. 实现用户相关VO映射器
+
+
+
+
+
   - 创建UserVOMapper将User实体映射为UserVO
   - 确保字段名称对齐（displayName, avatarUrl, 大写角色）
   - _需求: 2.1, 2.2, 2.3_
 
-- [ ] 2.1 创建UserVO数据类
+- [x] 2.1 创建UserVO数据类
+
+
   - 定义符合前端规范的 `UserVO` 数据类
   - 包含 `id`, `displayName`, `email`, `avatarUrl`, `role` 字段
   - 确保所有字段类型与前端期望一致
   - _需求: 2.1, 2.2, 2.3_
 
-- [ ] 2.2 实现UserVOMapper
+- [x] 2.2 实现UserVOMapper
+
+
   - 创建 `UserVOMapper` 组件类
   - 实现 `toVO(user: User): UserVO` 方法
   - 处理 `displayName` 字段的映射逻辑（优先使用displayName，否则使用username）
   - 确保角色枚举值转换为大写格式
   - _需求: 2.1, 2.2, 2.3_
 
-- [ ] 2.3 更新UserController使用新的响应格式
+- [x] 2.3 更新UserController使用新的响应格式
+
+
   - 修改所有用户相关的API端点返回 `ApiResponse<UserVO>` 格式
   - 集成UserVOMapper进行实体到VO的转换
   - 更新分页查询返回 `ApiResponse<PageVO<UserVO>>` 格式
