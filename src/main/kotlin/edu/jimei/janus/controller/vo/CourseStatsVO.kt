@@ -1,6 +1,5 @@
 package edu.jimei.janus.controller.vo
 
-import edu.jimei.janus.controller.vo.common.UserVO
 import java.time.LocalDateTime
 import java.util.UUID
 
