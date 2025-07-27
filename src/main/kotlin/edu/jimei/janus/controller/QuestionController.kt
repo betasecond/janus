@@ -1,14 +1,15 @@
 package edu.jimei.janus.controller
 
 import edu.jimei.janus.application.service.QuestionService
+import edu.jimei.janus.common.ApiResponse
+import edu.jimei.janus.common.PageVO
 import edu.jimei.janus.controller.dto.CreateQuestionDto
 import edu.jimei.janus.controller.dto.QuestionQuery
 import edu.jimei.janus.controller.dto.QuestionSearchDto
 import edu.jimei.janus.controller.dto.UpdateQuestionDto
+import edu.jimei.janus.controller.mapper.QuestionVOMapper
 import edu.jimei.janus.controller.vo.QuestionStatsVO
-import edu.jimei.janus.controller.vo.common.PageVO
-import edu.jimei.janus.controller.vo.common.QuestionVO
-import edu.jimei.janus.controller.vo.common.toVo
+import edu.jimei.janus.controller.vo.QuestionVO
 import edu.jimei.janus.domain.question.Difficulty
 import edu.jimei.janus.domain.question.QuestionType
 import org.springframework.data.domain.PageRequest
@@ -20,11 +21,12 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/questions")
 class QuestionController(
-    private val questionService: QuestionService
+    private val questionService: QuestionService,
+    private val questionVOMapper: QuestionVOMapper
 ) {
 
     @PostMapping
-    fun createQuestion(@RequestBody createDto: CreateQuestionDto): ResponseEntity<QuestionVO> {
+    fun createQuestion(@RequestBody createDto: CreateQuestionDto): ResponseEntity<ApiResponse<QuestionVO>> {
         val question = questionService.createQuestion(
             type = createDto.type,
             difficulty = createDto.difficulty,
@@ -35,13 +37,15 @@ class QuestionController(
             creatorId = createDto.creatorId
         )
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(question.toVo())
+        val questionVO = questionVOMapper.toVO(question)
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse(data = questionVO))
     }
 
     @GetMapping("/{id}")
-    fun getQuestion(@PathVariable id: UUID): ResponseEntity<QuestionVO> {
+    fun getQuestion(@PathVariable id: UUID): ResponseEntity<ApiResponse<QuestionVO>> {
         val question = questionService.findById(id)
-        return ResponseEntity.ok(question.toVo())
+        val questionVO = questionVOMapper.toVO(question)
+        return ResponseEntity.ok(ApiResponse(data = questionVO))
     }
 
     @GetMapping
@@ -49,14 +53,24 @@ class QuestionController(
         @ModelAttribute query: QuestionQuery,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): ResponseEntity<PageVO<QuestionVO>> {
+    ): ResponseEntity<ApiResponse<PageVO<QuestionVO>>> {
         val pageable = PageRequest.of(page, size)
         val questionPage = questionService.searchQuestions(query, pageable)
-        return ResponseEntity.ok(questionPage.toVo { it.toVo() })
+        
+        val questionVOs = questionPage.content.map { questionVOMapper.toVO(it) }
+        val pageVO = PageVO(
+            content = questionVOs,
+            totalElements = questionPage.totalElements,
+            totalPages = questionPage.totalPages,
+            size = questionPage.size,
+            number = questionPage.number
+        )
+        
+        return ResponseEntity.ok(ApiResponse(data = pageVO))
     }
 
     @PostMapping("/search")
-    fun searchQuestions(@RequestBody searchDto: QuestionSearchDto): ResponseEntity<List<QuestionVO>> {
+    fun searchQuestions(@RequestBody searchDto: QuestionSearchDto): ResponseEntity<ApiResponse<List<QuestionVO>>> {
         val questions = when {
             searchDto.knowledgePointIds != null && searchDto.difficulty != null ->
                 questionService.findByKnowledgePointsAndDifficulty(searchDto.knowledgePointIds, searchDto.difficulty)
@@ -69,15 +83,15 @@ class QuestionController(
             else -> questionService.findAll()
         }
 
-        val questionVos = questions.map { it.toVo() }
-        return ResponseEntity.ok(questionVos)
+        val questionVOs = questions.map { questionVOMapper.toVO(it) }
+        return ResponseEntity.ok(ApiResponse(data = questionVOs))
     }
 
     @PutMapping("/{id}")
     fun updateQuestion(
         @PathVariable id: UUID,
         @RequestBody updateDto: UpdateQuestionDto
-    ): ResponseEntity<QuestionVO> {
+    ): ResponseEntity<ApiResponse<QuestionVO>> {
         val updatedQuestion = questionService.updateQuestion(
             questionId = id,
             type = updateDto.type,
@@ -88,17 +102,18 @@ class QuestionController(
             knowledgePointIds = updateDto.knowledgePointIds
         )
 
-        return ResponseEntity.ok(updatedQuestion.toVo())
+        val questionVO = questionVOMapper.toVO(updatedQuestion)
+        return ResponseEntity.ok(ApiResponse(data = questionVO))
     }
 
     @DeleteMapping("/{id}")
-    fun deleteQuestion(@PathVariable id: UUID): ResponseEntity<Void> {
+    fun deleteQuestion(@PathVariable id: UUID): ResponseEntity<ApiResponse<String>> {
         questionService.deleteQuestion(id)
-        return ResponseEntity.noContent().build()
+        return ResponseEntity.ok(ApiResponse(data = "Question deleted successfully"))
     }
 
     @GetMapping("/stats")
-    fun getQuestionStats(): ResponseEntity<QuestionStatsVO> {
+    fun getQuestionStats(): ResponseEntity<ApiResponse<QuestionStatsVO>> {
         val allQuestions = questionService.findAll()
 
         val statsByType = QuestionType.values().associateWith { type ->
@@ -115,27 +130,20 @@ class QuestionController(
             byDifficulty = statsByDifficulty
         )
 
-        return ResponseEntity.ok(stats)
+        return ResponseEntity.ok(ApiResponse(data = stats))
     }
 
     @GetMapping("/types")
-    fun getQuestionTypes(): ResponseEntity<List<String>> {
-        return ResponseEntity.ok(QuestionType.values().map { it.name })
+    fun getQuestionTypes(): ResponseEntity<ApiResponse<List<String>>> {
+        val types = QuestionType.values().map { it.name }
+        return ResponseEntity.ok(ApiResponse(data = types))
     }
 
     @GetMapping("/difficulties")
-    fun getDifficulties(): ResponseEntity<List<String>> {
-        return ResponseEntity.ok(Difficulty.values().map { it.name })
+    fun getDifficulties(): ResponseEntity<ApiResponse<List<String>>> {
+        val difficulties = Difficulty.values().map { it.name }
+        return ResponseEntity.ok(ApiResponse(data = difficulties))
     }
 
-    // 异常处理
-    @ExceptionHandler(IllegalArgumentException::class)
-    fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<Map<String, String>> {
-        return ResponseEntity.badRequest().body(
-            mapOf(
-                "error" to "Bad Request",
-                "message" to (ex.message ?: "Invalid request")
-            )
-        )
-    }
+
 }

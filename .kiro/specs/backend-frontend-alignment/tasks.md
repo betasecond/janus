@@ -71,48 +71,70 @@
   - 更新分页查询返回 `ApiResponse<PageVO<UserVO>>` 格式
   - _需求: 1.1, 2.1, 8.1_
 
-- [ ] 3. 实现课程相关VO映射器
+- [x] 3. 实现课程相关VO映射器
+
+
+
+
+
   - 创建CourseVOMapper将Course实体映射为CourseVO
   - 确保teacher字段返回完整UserVO对象，coverImageUrl字段对齐
   - _需求: 3.1, 3.2, 3.3_
 
-- [ ] 3.1 创建CourseVO数据类
+- [x] 3.1 创建CourseVO数据类
+
+
   - 定义符合前端规范的 `CourseVO` 数据类
   - 包含 `id`, `name`, `description`, `teacher`, `coverImageUrl` 字段
   - 确保 `teacher` 字段类型为 `UserVO` 而非字符串
   - _需求: 3.1, 3.2_
 
-- [ ] 3.2 实现CourseVOMapper
+- [x] 3.2 实现CourseVOMapper
+
+
   - 创建 `CourseVOMapper` 组件类，依赖 `UserVOMapper`
   - 实现 `toVO(course: Course): CourseVO` 方法
   - 确保teacher字段通过UserVOMapper转换为完整的UserVO对象
   - 处理coverImageUrl字段的映射
   - _需求: 3.1, 3.2_
 
-- [ ] 3.3 创建CourseEnrollmentVO和相关API
+- [x] 3.3 创建CourseEnrollmentVO和相关API
+
+
   - 创建 `CourseEnrollmentVO` 数据类
   - 实现独立的选课API端点 `/api/courses/{id}/enrollments`
   - 移除Course中的students数量字段，通过独立API获取
   - _需求: 3.3_
 
-- [ ] 3.4 更新CourseController使用新的响应格式
+- [x] 3.4 更新CourseController使用新的响应格式
+
+
   - 修改所有课程相关的API端点返回统一响应格式
   - 集成CourseVOMapper进行实体到VO的转换
   - 实现课程选课相关的独立API端点
   - _需求: 1.1, 3.1, 3.3_
 
-- [ ] 4. 实现题目相关VO映射器
+- [x] 4. 实现题目相关VO映射器
+
+
+
+
+
   - 创建QuestionVOMapper处理题目实体到VO的复杂映射
   - 处理content字段、选项格式转换、枚举值对齐
   - _需求: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 4.1 创建QuestionVO数据类
+- [x] 4.1 创建QuestionVO数据类
+
+
   - 定义符合前端规范的 `QuestionVO` 数据类
   - 包含 `id`, `content`, `type`, `difficulty`, `knowledgePointIds`, `options`, `correctAnswer`, `explanation` 字段
   - 确保 `options` 字段类型为 `Map<String, String>?`
   - _需求: 4.1, 4.4, 4.5_
 
-- [ ] 4.2 实现QuestionVOMapper
+- [x] 4.2 实现QuestionVOMapper
+
+
   - 创建 `QuestionVOMapper` 组件类
   - 实现题目类型枚举值的映射（MULTIPLE_CHOICE → SINGLE_CHOICE等）
   - 实现难度枚举值的大写转换
@@ -120,13 +142,17 @@
   - 将knowledgePoints关联转换为knowledgePointIds数组
   - _需求: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 4.3 创建KnowledgePointVO数据类
+- [x] 4.3 创建KnowledgePointVO数据类
+
+
   - 定义符合前端规范的 `KnowledgePointVO` 数据类
   - 包含 `id`, `name`, `description`, `subject`, `parentId` 字段
   - 实现KnowledgePointVOMapper
   - _需求: 4.4_
 
-- [ ] 4.4 更新QuestionController使用新的响应格式
+- [x] 4.4 更新QuestionController使用新的响应格式
+
+
   - 修改所有题目相关的API端点返回统一响应格式
   - 集成QuestionVOMapper进行实体到VO的转换
   - 更新分页查询和搜索功能
