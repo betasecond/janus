@@ -2,258 +2,460 @@
 
 ## 概述
 
-本文档定义了 Janus Eye 教学平台中使用的所有数据结构和类型定义。这些数据结构用于前端与后端的数据交互，以及内部数据处理。
+本文档定义了 Janus Eye 教学平台中使用的所有数据结构和类型定义。这些数据结构基于《Janus Eye 教学平台统一 API 规范 (v1.0)》，采用 VO (View Object) 模式，用于前端与后端的数据交互。
+
+## 全局响应结构
+
+### ApiResponse<T> - 统一成功响应
+```typescript
+interface ApiResponse<T> {
+  success: true;
+  data: T; // T 可以是任何数据类型，如 UserVO, PageVO<CourseVO> 等
+}
+```
+
+### ApiErrorResponse - 统一错误响应
+```typescript
+interface ApiErrorResponse {
+  success: false;
+  error: {
+    code: string;    // 错误代码，如 "RESOURCE_NOT_FOUND"
+    message: string; // 错误描述信息
+  };
+}
+```
+
+### PageVO<T> - 分页数据结构
+```typescript
+interface PageVO<T> {
+  content: T[];         // 当前页的数据列表
+  totalElements: number; // 总元素数量
+  totalPages: number;    // 总页数
+  size: number;          // 每页大小
+  number: number;        // 当前页码 (从 0 开始)
+}
+```
 
 ## 核心数据结构
 
 ### 1. 用户相关 (User Related)
 
-#### User - 用户信息
+#### UserVO - 用户视图对象
 ```typescript
-interface User {
+interface UserVO {
   id: string;           // 用户唯一标识符
-  name: string;         // 用户姓名
+  displayName: string;  // 用户显示名称
   email: string;        // 用户邮箱
-  avatar: string;       // 用户头像 URL
-  role: 'teacher' | 'student' | 'admin';  // 用户角色
+  avatarUrl: string;    // 用户头像 URL
+  role: 'TEACHER' | 'STUDENT' | 'ADMIN';  // 用户角色
 }
 ```
 
 **字段说明**：
-- `id`: 用户的唯一标识符，通常为 UUID 格式
-- `name`: 用户的真实姓名
-- `email`: 用户的邮箱地址，用于登录和通知
-- `avatar`: 用户头像图片的 URL 地址
-- `role`: 用户角色类型，支持教师、学生、管理员三种角色
+- `id`: 用户的唯一标识符，UUID 格式
+- `displayName`: 用户的显示名称（原 `name` 字段）
+- `email`: 用户的邮箱地址，用于登录和身份认证
+- `avatarUrl`: 用户头像图片的 URL 地址（原 `avatar` 字段）
+- `role`: 用户角色类型，枚举值统一为大写格式
 
 ### 2. 课程相关 (Course Related)
 
-#### Course - 课程信息
+#### CourseVO - 课程视图对象
 ```typescript
-interface Course {
+interface CourseVO {
   id: string;           // 课程唯一标识符
   name: string;         // 课程名称
   description: string;  // 课程描述
-  teacher: string;      // 授课教师姓名
-  students: number;     // 学生人数
-  progress: number;     // 课程进度（0-100）
-  image?: string;       // 课程封面图片 URL（可选）
+  teacher: UserVO;      // 授课教师信息
+  coverImageUrl?: string; // 课程封面图片 URL（可选）
 }
 ```
 
 **字段说明**：
-- `id`: 课程的唯一标识符
+- `id`: 课程的唯一标识符，UUID 格式
 - `name`: 课程的名称
 - `description`: 课程的详细描述
-- `teacher`: 授课教师的姓名
-- `students`: 参与课程的学生数量
-- `progress`: 课程完成进度，范围为 0-100
-- `image`: 课程封面图片，可选字段
+- `teacher`: 授课教师的完整用户信息对象（原 `teacher: string` 字段）
+- `coverImageUrl`: 课程封面图片 URL（原 `image` 字段）
+
+**注意**：学生数量和课程进度不再作为课程的直接属性，需要通过相应的 API 端点获取：
+- 学生列表：`GET /api/v1/courses/{courseId}/enrollments`
+- 课程进度：通过学情分析服务获取
+
+#### CourseEnrollmentVO - 课程选课视图对象
+```typescript
+interface CourseEnrollmentVO {
+  courseId: string;     // 课程 ID
+  studentId: string;    // 学生 ID
+  enrolledAt: string;   // 选课时间
+}
+```
 
 ### 3. 题目相关 (Question Related)
 
-#### Question - 题目信息
+#### QuestionVO - 题目视图对象
 ```typescript
-interface Question {
+interface QuestionVO {
   id: string;                    // 题目唯一标识符
-  title: string;                 // 题目标题
-  type: 'multiple-choice' | 'true-false' | 'short-answer' | 'essay';  // 题目类型
-  difficulty: 'easy' | 'medium' | 'hard';  // 题目难度
-  knowledgePoints: string[];     // 知识点列表
-  options?: string[];            // 选项列表（选择题使用）
-  correctAnswer?: string | number;  // 正确答案
+  content: string;               // 题目内容
+  type: 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'ESSAY';  // 题目类型
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';  // 题目难度
+  knowledgePointIds: string[];   // 知识点 ID 列表
+  options?: Record<string, string>;  // 选项对象（选择题使用）
+  correctAnswer?: string;        // 正确答案
   explanation?: string;          // 答案解释
 }
 ```
 
 **字段说明**：
-- `id`: 题目的唯一标识符
-- `title`: 题目的标题或问题描述
-- `type`: 题目类型，支持单选题、判断题、简答题、论述题
-- `difficulty`: 题目难度等级
-- `knowledgePoints`: 该题目涉及的知识点数组
-- `options`: 选择题的选项数组（可选）
-- `correctAnswer`: 正确答案（可选）
+- `id`: 题目的唯一标识符，UUID 格式
+- `content`: 题目的完整内容描述（原 `title` 字段）
+- `type`: 题目类型，枚举值统一为大写格式
+- `difficulty`: 题目难度等级，枚举值统一为大写格式
+- `knowledgePointIds`: 该题目关联的知识点 ID 数组（原 `knowledgePoints` 字段）
+- `options`: 选择题的选项键值对对象，如 `{ "A": "选项A", "B": "选项B" }`（原 `options: string[]`）
+- `correctAnswer`: 正确答案，对应选项的键（如 "B"）
 - `explanation`: 答案解释说明（可选）
+
+#### KnowledgePointVO - 知识点视图对象
+```typescript
+interface KnowledgePointVO {
+  id: string;           // 知识点唯一标识符
+  name: string;         // 知识点名称
+  description?: string; // 知识点描述
+  subject: string;      // 所属学科
+  parentId?: string;    // 父知识点 ID（用于构建知识树）
+}
+```
 
 ### 4. 作业相关 (Assignment Related)
 
-#### Assignment - 作业信息
+#### AssignmentVO - 作业视图对象
 ```typescript
-interface Assignment {
+interface AssignmentVO {
   id: string;           // 作业唯一标识符
   title: string;        // 作业标题
   description: string;  // 作业描述
   dueDate: string;      // 截止日期
   courseId: string;     // 所属课程 ID
-  questions: Question[]; // 题目列表
-  submissions: number;  // 提交人数
-  maxScore: number;     // 满分分值
+  questionIds: string[]; // 题目 ID 列表
+  createdAt: string;    // 创建时间
 }
 ```
 
 **字段说明**：
-- `id`: 作业的唯一标识符
+- `id`: 作业的唯一标识符，UUID 格式
 - `title`: 作业的标题
 - `description`: 作业的详细描述
 - `dueDate`: 作业截止日期，ISO 8601 格式
 - `courseId`: 作业所属课程的 ID
-- `questions`: 作业包含的题目列表
-- `submissions`: 已提交作业的学生数量
-- `maxScore`: 作业的满分分值
+- `questionIds`: 作业包含的题目 ID 列表（原 `questions: Question[]` 字段）
+- `createdAt`: 作业创建时间
+
+**注意**：提交人数和满分分值不再作为作业的直接属性，需要通过相应的 API 端点获取：
+- 提交详情：`GET /api/v1/assignments/{id}/submissions`
+- 完整题目信息需要另行获取
+
+#### AssignmentSubmissionVO - 作业提交视图对象
+```typescript
+interface AssignmentSubmissionVO {
+  id: string;           // 提交记录唯一标识符
+  assignmentId: string; // 作业 ID
+  studentId: string;    // 学生 ID
+  submittedAt: string;  // 提交时间
+  status: 'SUBMITTED' | 'GRADING' | 'GRADED'; // 提交状态
+  score?: number;       // 得分（可选）
+  answers: SubmissionAnswerVO[]; // 答案列表
+}
+```
+
+#### SubmissionAnswerVO - 提交答案视图对象
+```typescript
+interface SubmissionAnswerVO {
+  id: string;           // 答案记录唯一标识符
+  questionId: string;   // 题目 ID
+  answer: any;          // 学生答案（类型根据题目类型而定）
+  isCorrect?: boolean;  // 是否正确（可选）
+}
+```
 
 ### 5. 通知相关 (Notification Related)
 
-#### Notification - 通知信息
+#### NotificationVO - 通知视图对象
 ```typescript
-interface Notification {
+interface NotificationVO {
   id: string;           // 通知唯一标识符
   title: string;        // 通知标题
   content: string;      // 通知内容
-  type: 'info' | 'warning' | 'success' | 'error';  // 通知类型
+  type: 'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR';  // 通知类型
   isRead: boolean;      // 是否已读
   createdAt: string;    // 创建时间
-  avatar?: string;      // 发送者头像 URL（可选）
+  senderId?: string;    // 发送者 ID（可选）
 }
 ```
 
 **字段说明**：
-- `id`: 通知的唯一标识符
+- `id`: 通知的唯一标识符，UUID 格式
 - `title`: 通知的标题
 - `content`: 通知的详细内容
-- `type`: 通知类型，用于显示不同的样式
+- `type`: 通知类型，枚举值统一为大写格式
 - `isRead`: 标记通知是否已被用户阅读
 - `createdAt`: 通知创建时间，ISO 8601 格式
-- `avatar`: 发送通知者的头像 URL（可选）
+- `senderId`: 发送通知者的用户 ID（原 `avatar` 字段改为通过用户 ID 关联）
 
-#### ToastNotification - 浮窗通知
+#### ToastNotificationVO - 浮窗通知视图对象
 ```typescript
-interface ToastNotification {
-  id: number;           // 通知 ID
+interface ToastNotificationVO {
+  id: string;           // 通知 ID（改为 string 类型保持一致性）
   title: string;        // 通知标题
   content: string;      // 通知内容
-  type: 'success' | 'error' | 'info' | 'warning';  // 通知类型
+  type: 'SUCCESS' | 'ERROR' | 'INFO' | 'WARNING';  // 通知类型
 }
 ```
 
 ### 6. 统计数据相关 (Statistics Related)
 
-#### PerformanceStats - 性能统计数据
+#### PerformanceStatsVO - 性能统计数据视图对象
 ```typescript
-interface PerformanceStats {
+interface PerformanceStatsVO {
+  studentId: string;              // 学生 ID
+  courseId?: string;              // 课程 ID（可选，用于课程级别统计）
   averageAccuracy: number;        // 平均准确率
-  frequentlyMissedConcepts: string[];  // 频繁出错的概念
-  classRanking: string;           // 班级排名
-  knowledgePointMastery: {        // 知识点掌握情况
-    [key: string]: number;
-  };
-  accuracyTrends: {               // 准确率趋势
-    week: string;
-    accuracy: number;
-  }[];
-  questionTypeDistribution: {     // 题型分布
-    type: string;
-    percentage: number;
-  }[];
+  frequentlyMissedConceptIds: string[];  // 频繁出错的知识点 ID 列表
+  classRanking: number;           // 班级排名（数字）
+  knowledgePointMastery: KnowledgePointMasteryVO[]; // 知识点掌握情况
+  accuracyTrends: AccuracyTrendVO[]; // 准确率趋势
+  questionTypeDistribution: QuestionTypeDistributionVO[]; // 题型分布
+  generatedAt: string;            // 统计生成时间
 }
 ```
 
-**字段说明**：
-- `averageAccuracy`: 学生的平均答题准确率
-- `frequentlyMissedConcepts`: 学生经常出错的概念列表
-- `classRanking`: 学生在班级中的排名
-- `knowledgePointMastery`: 各知识点的掌握程度映射
-- `accuracyTrends`: 按周统计的准确率趋势数据
-- `questionTypeDistribution`: 不同题型的分布百分比
+#### KnowledgePointMasteryVO - 知识点掌握情况视图对象
+```typescript
+interface KnowledgePointMasteryVO {
+  knowledgePointId: string;       // 知识点 ID
+  knowledgePointName: string;     // 知识点名称
+  masteryLevel: number;           // 掌握程度 (0-100)
+  totalQuestions: number;         // 总题目数
+  correctAnswers: number;         // 正确答案数
+}
+```
+
+#### AccuracyTrendVO - 准确率趋势视图对象
+```typescript
+interface AccuracyTrendVO {
+  period: string;                 // 时间周期（如 "2024-W01"）
+  accuracy: number;               // 准确率
+  totalQuestions: number;         // 总题目数
+  correctAnswers: number;         // 正确答案数
+}
+```
+
+#### QuestionTypeDistributionVO - 题型分布视图对象
+```typescript
+interface QuestionTypeDistributionVO {
+  type: string;                   // 题目类型
+  count: number;                  // 题目数量
+  percentage: number;             // 百分比
+  averageAccuracy: number;        // 该题型的平均准确率
+}
+```
 
 ### 7. 教学大纲相关 (Syllabus Related)
 
-#### Chapter - 章节信息
+#### LessonPlanVO - 教案视图对象
 ```typescript
-interface Chapter {
-  id: string;           // 章节唯一标识符
-  title: string;        // 章节标题
-  order: number;        // 章节顺序
-  content: string;      // 章节内容
-  exercises: Question[]; // 练习题列表
-  isCompleted: boolean; // 是否完成
+interface LessonPlanVO {
+  id: string;           // 教案唯一标识符
+  name: string;         // 教案名称
+  courseId?: string;    // 课程 ID（可选）
+  creatorId: string;    // 创建者 ID
+  sourceDocumentUrl?: string; // 源文档 URL（可选）
+  status: 'DRAFT' | 'GENERATING' | 'COMPLETED' | 'FAILED'; // 教案状态
+  aiModelUsed?: string; // 使用的 AI 模型（可选）
+  createdAt: string;    // 创建时间
+  updatedAt: string;    // 更新时间
 }
 ```
 
-#### Syllabus - 教学大纲
+#### LessonPlanItemVO - 教案内容项视图对象
 ```typescript
-interface Syllabus {
-  id: string;           // 大纲唯一标识符
-  courseId: string;     // 课程 ID
-  chapters: Chapter[];  // 章节列表
-  isGenerating: boolean; // 是否正在生成
-  progress: number;     // 生成进度
+interface LessonPlanItemVO {
+  id: string;           // 内容项唯一标识符
+  lessonPlanId: string; // 教案 ID
+  title: string;        // 内容项标题
+  contentType: 'LECTURE' | 'EXERCISE' | 'NOTE' | 'SUMMARY'; // 内容类型
+  content: string;      // 内容详情
+  order: number;        // 排序顺序
+  createdAt: string;    // 创建时间
+}
+```
+
+#### DocumentChunkVO - 文档内容块视图对象
+```typescript
+interface DocumentChunkVO {
+  id: string;           // 内容块唯一标识符
+  lessonPlanId: string; // 教案 ID
+  content: string;      // 内容块文本
+  chunkOrder: number;   // 块顺序
+  vectorId?: string;    // 向量 ID（可选）
+  metadata?: Record<string, any>; // 元数据（可选）
+  createdAt: string;    // 创建时间
 }
 ```
 
 ### 8. 学生分析相关 (Student Analysis Related)
 
-#### StudentAnalysis - 学生分析数据
+#### StudentAnalysisVO - 学生分析数据视图对象
 ```typescript
-interface StudentAnalysis {
+interface StudentAnalysisVO {
   id: string;               // 分析记录唯一标识符
+  studentId: string;        // 学生 ID
   studentName: string;      // 学生姓名
-  incorrectQuestions: string; // 错题信息
-  errorLocation: string;    // 错误位置
-  suggestedCorrection: string; // 建议改正
+  courseId?: string;        // 课程 ID（可选）
+  assignmentId?: string;    // 作业 ID（可选）
+  incorrectQuestionIds: string[]; // 错题 ID 列表
+  errorPatterns: ErrorPatternVO[]; // 错误模式分析
+  suggestedActions: SuggestedActionVO[]; // 建议改进措施
+  analysisDate: string;     // 分析时间
+  createdAt: string;        // 创建时间
+}
+```
+
+#### ErrorPatternVO - 错误模式视图对象
+```typescript
+interface ErrorPatternVO {
+  id: string;               // 错误模式唯一标识符
+  knowledgePointId: string; // 相关知识点 ID
+  errorType: string;        // 错误类型
+  frequency: number;        // 出现频率
+  description: string;      // 错误描述
+  examples: string[];       // 错误示例
+}
+```
+
+#### SuggestedActionVO - 建议措施视图对象
+```typescript
+interface SuggestedActionVO {
+  id: string;               // 建议措施唯一标识符
+  actionType: 'REVIEW' | 'PRACTICE' | 'TUTORIAL' | 'CONSULTATION'; // 措施类型
+  priority: 'HIGH' | 'MEDIUM' | 'LOW'; // 优先级
+  description: string;      // 措施描述
+  resourceIds?: string[];   // 相关资源 ID 列表（可选）
+  estimatedDuration?: number; // 预估耗时（分钟）
 }
 ```
 
 ### 9. 导航菜单相关 (Navigation Menu Related)
 
-#### MenuItem - 菜单项
+#### MenuItemVO - 菜单项视图对象
 ```typescript
-interface MenuItem {
+interface MenuItemVO {
   id: string;           // 菜单项唯一标识符
   label: string;        // 菜单标签
   icon: string;         // 图标名称
   path: string;         // 路由路径
+  parentId?: string;    // 父菜单 ID（可选，用于多级菜单）
+  order: number;        // 排序顺序
   isActive?: boolean;   // 是否激活状态（可选）
+  isVisible: boolean;   // 是否可见
+  requiredRole?: 'TEACHER' | 'STUDENT' | 'ADMIN'; // 所需角色（可选）
 }
 ```
 
+**字段说明**：
+- `id`: 菜单项的唯一标识符，UUID 格式
+- `label`: 菜单显示的文本标签
+- `icon`: 菜单图标的名称或类名
+- `path`: 菜单对应的路由路径
+- `parentId`: 父菜单的 ID，用于构建多级菜单结构
+- `order`: 菜单项的排序顺序
+- `isActive`: 当前是否为激活状态（通常由前端路由状态决定）
+- `isVisible`: 菜单项是否可见
+- `requiredRole`: 访问该菜单项所需的用户角色
+
 ### 10. 资源管理相关 (Resource Management Related)
 
-#### Resource - 资源信息
+#### ResourceVO - 教学资源视图对象
 ```typescript
-interface Resource {
+interface ResourceVO {
   id: string;           // 资源唯一标识符
   title: string;        // 资源标题
-  type: 'video' | 'document' | 'image' | 'assessment';  // 资源类型
+  type: string;         // 资源类型
   subject: string;      // 学科
-  uploader: string;     // 上传者
-  uploadDate: string;   // 上传日期
+  uploaderId: string;   // 上传者 ID
+  createdAt: string;    // 创建时间
+  storageObjectId: string; // 关联的存储对象 ID
   thumbnail?: string;   // 缩略图 URL（可选）
 }
 ```
 
+**字段说明**：
+- `id`: 资源的唯一标识符，UUID 格式
+- `title`: 资源的标题
+- `type`: 资源类型（具体枚举值根据业务需求定义）
+- `subject`: 资源所属学科
+- `uploaderId`: 上传者的用户 ID（原 `uploader: string` 字段）
+- `createdAt`: 资源创建时间，ISO 8601 格式（原 `uploadDate` 字段）
+- `storageObjectId`: 关联的底层存储对象 ID，用于获取实际文件信息
+- `thumbnail`: 资源缩略图 URL（可选）
+
+#### StorageObjectVO - 存储对象视图对象
+```typescript
+interface StorageObjectVO {
+  id: string;           // 存储对象唯一标识符
+  objectKey: string;    // 在对象存储服务中的路径
+  url: string;          // 文件的可访问 URL
+  originalFilename: string; // 原始文件名
+  contentType: string;  // 文件 MIME 类型
+  fileSize: number;     // 文件大小（字节）
+  uploaderId: string;   // 上传者 ID
+  createdAt: string;    // 上传时间
+}
+```
+
+**字段说明**：
+- `id`: 存储对象的唯一标识符，UUID 格式
+- `objectKey`: 文件在对象存储服务（如 S3, OSS）中的唯一路径
+- `url`: 文件的可直接访问 URL
+- `originalFilename`: 用户上传时的原始文件名
+- `contentType`: 文件的 MIME 类型（如 "image/jpeg", "application/pdf"）
+- `fileSize`: 文件大小，以字节为单位
+- `uploaderId`: 上传该文件的用户 ID
+- `createdAt`: 文件上传时间，ISO 8601 格式
+
+**注意**：新架构将"存储对象"和"教学资源"分离：
+- `StorageObjectVO` 代表物理文件，关注存储和访问
+- `ResourceVO` 代表教学资源，关注教学意义和业务逻辑
+- 一个教学资源通过 `storageObjectId` 关联到具体的存储对象
+
 ## 数据类型说明
 
 ### 基础类型
-- `string`: 字符串类型
+- `string`: 字符串类型，所有 ID 字段统一使用 UUID 格式
 - `number`: 数字类型
 - `boolean`: 布尔类型
-- `Date`: 日期类型（通常以 ISO 8601 格式的字符串传输）
+- `Date`: 日期类型（统一以 ISO 8601 格式的字符串传输）
 
-### 联合类型
-- `'teacher' | 'student' | 'admin'`: 用户角色枚举
-- `'multiple-choice' | 'true-false' | 'short-answer' | 'essay'`: 题目类型枚举
-- `'easy' | 'medium' | 'hard'`: 难度等级枚举
-- `'info' | 'warning' | 'success' | 'error'`: 通知类型枚举
-- `'video' | 'document' | 'image' | 'assessment'`: 资源类型枚举
+### 联合类型（枚举值统一为大写）
+- `'TEACHER' | 'STUDENT' | 'ADMIN'`: 用户角色枚举
+- `'SINGLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'ESSAY'`: 题目类型枚举
+- `'EASY' | 'MEDIUM' | 'HARD'`: 难度等级枚举
+- `'INFO' | 'WARNING' | 'SUCCESS' | 'ERROR'`: 通知类型枚举
+- `'DRAFT' | 'GENERATING' | 'COMPLETED' | 'FAILED'`: 教案状态枚举
+- `'SUBMITTED' | 'GRADING' | 'GRADED'`: 作业提交状态枚举
 
 ### 数组类型
-- `string[]`: 字符串数组
-- `Question[]`: 题目数组
-- `Chapter[]`: 章节数组
+- `string[]`: 字符串数组，通常用于 ID 列表
+- `QuestionVO[]`: 题目视图对象数组
+- `LessonPlanItemVO[]`: 教案内容项数组
+- `SubmissionAnswerVO[]`: 提交答案数组
 
 ### 对象类型
-- `{ [key: string]: number }`: 键值对对象，键为字符串，值为数字
+- `Record<string, string>`: 键值对对象，如题目选项 `{ "A": "选项A", "B": "选项B" }`
+- `Record<string, any>`: 通用键值对对象，用于元数据存储
+- `ApiResponse<T>`: 泛型响应包装器
+- `PageVO<T>`: 泛型分页数据结构
 
 ## 使用说明
 
