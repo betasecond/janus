@@ -7,6 +7,7 @@ data class AppPulsarProperties(
     val topics: Topics
 ) {
     data class Topics(
-        val fileProcessing: String
+        val fileProcessing: String,
+        val trackingEvents: String
     )
-} 
+}

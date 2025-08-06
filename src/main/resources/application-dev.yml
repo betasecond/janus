@@ -58,6 +58,7 @@ app:
   pulsar:
     topics:
       file-processing: ${FILE_PROCESSING_TOPIC:persistent://public/default/file-processing-topic}
+      tracking-events: ${TRACKING_EVENTS_TOPIC:persistent://public/default/tracking-events-topic}
 
 server:
   port: ${SERVER_PORT:9901}
