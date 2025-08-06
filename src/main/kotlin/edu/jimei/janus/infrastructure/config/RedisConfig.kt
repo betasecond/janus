@@ -20,10 +20,11 @@ class RedisConfig {
         val objectMapper = ObjectMapper()
         objectMapper.registerModule(JavaTimeModule()) // Support ZonedDateTime
         objectMapper.registerModule(KotlinModule.Builder().build()) // Support Kotlin data classes
-        objectMapper.activateDefaultTyping(
-            objectMapper.polymorphicTypeValidator,
-            ObjectMapper.DefaultTyping.NON_FINAL
-        )
+        // 移除activateDefaultTyping，避免JSON序列化时添加类型信息导致解析错误
+        // objectMapper.activateDefaultTyping(
+        //     objectMapper.polymorphicTypeValidator,
+        //     ObjectMapper.DefaultTyping.NON_FINAL
+        // )
         return objectMapper
     }
 
