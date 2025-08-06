@@ -2,6 +2,7 @@ package edu.jimei.janus.common
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -36,6 +37,21 @@ class GlobalExceptionHandler {
     }
     
 
+    
+    /**
+     * 处理JSON解析异常
+     */
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleJsonParseError(ex: HttpMessageNotReadableException): ResponseEntity<ApiErrorResponse> {
+        logger.warn("JSON parse error: {}", ex.message)
+        val error = ApiErrorResponse(
+            error = ErrorDetail(
+                code = ErrorCode.BAD_REQUEST.code,
+                message = "Invalid JSON format in request body"
+            )
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
+    }
     
     /**
      * 处理方法参数验证异常
