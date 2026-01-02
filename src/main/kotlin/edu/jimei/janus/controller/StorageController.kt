@@ -9,6 +9,7 @@ import edu.jimei.janus.controller.vo.StorageObjectVO
 import edu.jimei.janus.controller.vo.common.StatusVO
 import edu.jimei.janus.domain.user.UserRepository
 import edu.jimei.janus.infrastructure.pulsar.FileProcessingProducer
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.data.domain.Page
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -17,6 +18,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/api/storage")
+@ConditionalOnExpression("!'\${oss.endpoint:}'.isEmpty()")
 class StorageController(
     private val ossService: OssService,
     private val fileProcessingProducer: FileProcessingProducer,

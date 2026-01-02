@@ -9,10 +9,12 @@ import org.springframework.ai.reader.markdown.MarkdownDocumentReader
 import org.springframework.ai.reader.markdown.config.MarkdownDocumentReaderConfig
 import org.springframework.ai.transformer.splitter.TokenTextSplitter
 import org.springframework.ai.vectorstore.VectorStore
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.core.io.Resource
 import java.io.File
 
 @Service
+@ConditionalOnBean(VectorStore::class)
 class DataIngestionService(
     // 只依赖 VectorStore，不需要关心具体的嵌入模型是哪个
     private val vectorStore: VectorStore

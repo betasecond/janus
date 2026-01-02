@@ -6,6 +6,7 @@ import edu.jimei.janus.domain.storage.StorageObjectRepository
 import edu.jimei.janus.domain.user.UserRepository
 import edu.jimei.janus.infrastructure.oss.OssProperties
 import edu.jimei.janus.infrastructure.oss.OssResource
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
@@ -17,6 +18,7 @@ import java.util.Date
 import java.util.UUID
 
 @Service
+@ConditionalOnExpression("!'\${oss.endpoint:}'.isEmpty()")
 class OssService(
     private val ossClient: OSS,
     private val properties: OssProperties,

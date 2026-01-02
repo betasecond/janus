@@ -2,11 +2,13 @@ package edu.jimei.janus.infrastructure.pulsar
 
 import edu.jimei.janus.application.service.FileProcessService
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.pulsar.annotation.PulsarListener
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
+@ConditionalOnExpression("!'\${oss.endpoint:}'.isEmpty()")
 class FileProcessingListener(
     private val fileProcessService: FileProcessService
 ) {

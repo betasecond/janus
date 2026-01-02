@@ -5,6 +5,7 @@ import com.aliyun.oss.*
 import com.aliyun.oss.common.auth.*
 import com.aliyun.oss.common.comm.Protocol
 import com.aliyun.oss.common.comm.SignVersion
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 @Configuration
 @EnableJpaAuditing
 @EnableConfigurationProperties(OssProperties::class)
+@ConditionalOnExpression("!'\${oss.endpoint:}'.isEmpty()")
 class OssClientConfig {
 
     @Bean

@@ -101,7 +101,7 @@ tasks.withType<Test> {
 }
 
 springBoot {
-    mainClass.set("edu.jimei.janus.JanusApplication")
+    mainClass.set("edu.jimei.janus.JanusApplicationKt")
 }
 
 tasks.test {

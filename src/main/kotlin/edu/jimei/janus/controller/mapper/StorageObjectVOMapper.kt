@@ -4,6 +4,7 @@ import edu.jimei.janus.application.service.OssService
 import edu.jimei.janus.common.EnumConverter
 import edu.jimei.janus.controller.vo.StorageObjectVO
 import edu.jimei.janus.domain.storage.StorageObject
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.stereotype.Component
 import java.time.format.DateTimeFormatter
 
@@ -12,6 +13,7 @@ import java.time.format.DateTimeFormatter
  * 负责将StorageObject实体映射为StorageObjectVO，确保字段名称对齐和枚举值转换
  */
 @Component
+@ConditionalOnExpression("!'\${oss.endpoint:}'.isEmpty()")
 class StorageObjectVOMapper(
     private val enumConverter: EnumConverter,
     private val ossService: OssService

@@ -4,6 +4,7 @@ import edu.jimei.janus.application.service.EmbeddingService
 import edu.jimei.janus.controller.vo.EmbeddingVO
 import edu.jimei.janus.controller.vo.common.StatusVO
 import org.springframework.ai.embedding.EmbeddingModel
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -15,6 +16,7 @@ data class EmbeddingRequest(val message: String)
 
 @RestController
 @RequestMapping("/ai")
+@ConditionalOnBean(EmbeddingModel::class)
 class EmbeddingController(
     private val embeddingService: EmbeddingService,
     private val embeddingModel: EmbeddingModel
