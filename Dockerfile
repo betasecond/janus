@@ -1,25 +1,22 @@
 # ============================================
 # Stage 1: Build
 # ============================================
-FROM gradle:8.5-jdk21 AS build
+FROM gradle:8.14-jdk21 AS build
 
 WORKDIR /app
 
-# Copy Gradle wrapper and build files first (for better caching)
-COPY gradle/ gradle/
-COPY gradlew .
-COPY gradlew.bat .
+# Copy build files first (for better caching)
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
-# Download dependencies (cached layer)
-RUN ./gradlew dependencies --no-daemon || true
+# Download dependencies (cached layer) - use pre-installed gradle, no wrapper download needed
+RUN gradle dependencies --no-daemon || true
 
 # Copy source code
 COPY src/ src/
 
 # Build the application
-RUN ./gradlew bootJar --no-daemon -x test
+RUN gradle bootJar --no-daemon -x test
 
 # ============================================
 # Stage 2: Runtime
